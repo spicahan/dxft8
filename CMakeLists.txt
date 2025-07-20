@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
+include(arm-gcc.cmake)
+
 project(Katy LANGUAGES C ASM)
 
 # -----------------------------------------------------------------------------
@@ -119,5 +121,6 @@ target_link_options(Katy.elf PRIVATE
 add_custom_command(TARGET Katy.elf POST_BUILD
   COMMAND ${CMAKE_SIZE} Katy.elf
   COMMAND ${CMAKE_OBJCOPY} -O binary Katy.elf Katy.bin
+  COMMAND ${CMAKE_OBJCOPY} -O ihex Katy.elf Katy.hex
   COMMAND arm-none-eabi-objdump -h -S Katy.elf > Katy.list
 )
