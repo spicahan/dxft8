@@ -44,7 +44,7 @@
           "call_from": "N6LN", 
           "locator": "DM03",
           "sequence": 1,
-          "snr": 0,
+          "snr": -2,
           "received_snr": 99
         }
       ]
@@ -56,7 +56,7 @@
           "call_from": "N6LN",
           "locator": "DM03", 
           "sequence": 1,
-          "snr": 0,
+          "snr": -3,
           "received_snr": 99
         }
       ]
@@ -69,7 +69,7 @@
           "locator": "DM03",
           "target_locator": "DM03", 
           "sequence": 1,
-          "snr": 0,
+          "snr": -4,
           "received_snr": 99
         },
         {
@@ -89,7 +89,7 @@
           "call_from": "N6LN",
           "locator": "DM03",
           "sequence": 1,
-          "snr": 0,
+          "snr": -5,
           "received_snr": 99
         },
         {

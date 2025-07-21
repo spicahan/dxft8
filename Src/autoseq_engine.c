@@ -467,8 +467,10 @@ static bool generate_response(ctx_t *ctx, const Decode *msg, bool override)
         return false;
     }
 
-    // Update the DX SNR
-    ctx->snr_tx = msg->snr;
+    if (ctx->rcvd_msg_type == TX1 || ctx->rcvd_msg_type == TX2) {
+        // Update the DX SNR
+        ctx->snr_tx = msg->snr;
+    }
 
     if(override) {
         strncpy(ctx->dxcall, msg->call_from, sizeof(ctx->dxcall) - 1);
