@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -26,6 +27,9 @@
 static const char *blank = "                     "; // 21 spaces
 static char worked_qso_entries[MAX_QSO_ENTRIES][MAX_LINE_LEN] = {};
 static int num_qsos = 0;
+
+static void add_header();
+static void remove_header();
 
 typedef enum _MsgColor
 {
@@ -148,11 +152,16 @@ bool display_worked_qsos()
     // pi is page index
     static int pi = 0;
     
+    if (pi == 0) {
+        add_header();
+    }
+
     // Determine how many entries to show (max 100)
     int total_entries = num_qsos < MAX_QSO_ENTRIES ? num_qsos : MAX_QSO_ENTRIES;
-    
-    if (pi * MAX_QSO_ROWS > total_entries) {
+
+    if (pi * MAX_QSO_ROWS >= total_entries) {
         pi = 0;
+        remove_header();
         return false;
     }
     
@@ -173,6 +182,16 @@ bool display_worked_qsos()
     }
     ++pi;
     return true;
+}
+
+static void add_header() {
+    char *header = add_worked_qso();
+    snprintf(header, MAX_LINE_LEN, "Total worked QSOs:%3u", num_qsos - 1);
+}
+
+static void remove_header() {
+    assert(num_qsos > 0);
+    --num_qsos;
 }
 
 // show debug text on LCD
