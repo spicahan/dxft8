@@ -8,4 +8,7 @@ Debug/*
 .cproject
 .settings/language.settings.xml
 Katy.*
+build
+*.o
+.DS_Store
 
