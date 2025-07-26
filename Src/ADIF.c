@@ -9,7 +9,7 @@
 
 #include "ADIF.h"
 #include "gen_ft8.h"
-#include "DS3231.h"
+#include "FakeRTC.h"
 #include "decode_ft8.h"
 #include <stdlib.h>
 #include <string.h>

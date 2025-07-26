@@ -141,7 +141,7 @@ void BSP_LCD_SetBackColor(uint32_t Color);
 void BSP_LCD_SetFont(sFONT *fonts);
 void BSP_LCD_SetTextColor(uint32_t Color);
 
-// From DS3231.h
+// From FakeRTC.h
 void make_Real_Time(void);
 void make_Real_Date(void);
 void display_Real_Date(int x, int y);

@@ -24,7 +24,7 @@
 #include "host_mocks.h"
 #else
 #include "button.h"  // For BandIndex
-#include "DS3231.h"  // For log_rtc_time_string
+#include "FakeRTC.h"  // For log_rtc_time_string
 #endif
 
 extern int Beacon_On; // TODO get rid of manual extern

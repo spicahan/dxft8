@@ -39,7 +39,7 @@
 #include "Codec_Gains.h"
 #include "button.h"
 
-#include "DS3231.h"
+#include "FakeRTC.h"
 
 #include "SiLabs.h"
 
@@ -55,7 +55,7 @@
 #include "qso_display.h"
 #include "traffic_manager.h"
 
-uint32_t start_time, ft8_time;
+uint32_t start_time, current_time;
 
 int QSO_xmit = 0;
 int target_slot;
@@ -105,7 +105,8 @@ void tx_display_update()
 
 static void update_synchronization(void)
 {
-	uint32_t current_time = HAL_GetTick();
+	static uint32_t ft8_time = 0;
+	current_time = HAL_GetTick();
 	ft8_time = current_time - start_time;
 
 	// Update slot and reset RX
@@ -195,7 +196,6 @@ int main(void)
 
 	EXT_I2C_Init();
 	HAL_Delay(10);
-	DS3231_init();
 	display_Real_Date(0, 240);
 
 	start_Si5351();

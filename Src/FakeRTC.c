@@ -5,11 +5,9 @@
  *      Author: user
  */
 
-#include "DS3231.h"
-#include "stm32746g_discovery.h"
+#include "FakeRTC.h"
 #include "Display.h"
 #include "main.h"
-#include "options.h"
 #include "log_file.h"
 
 char log_rtc_time_string[RTC_STRING_SIZE];
@@ -68,92 +66,37 @@ unsigned char decimal_to_bcd(unsigned char d) {
 	return (((d / 10) << 4) & 0xF0) | ((d % 10) & 0x0F);
 }
 
-unsigned char DS3231_Read(unsigned char address) {
-	return EXT_I2C_Read(DS3231_Read_addr, address);
-}
-
-void DS3231_Write(unsigned char address, unsigned char value) {
-	EXT_I2C_Write(DS3231_Write_addr, address, value);
-}
-
-void DS3231_init(void) {
-	DS3231_Write(controlREG, 0x00);
-	DS3231_Write(statusREG, 0x08);
-}
-
-void getTime(unsigned char *p3, unsigned char *p2, unsigned char *p1, short *p0,
-		short hour_format) {
-	unsigned char tmp = 0;
-
-	*p1 = DS3231_Read(secondREG);
-	*p1 = bcd_to_decimal(*p1);
-
-	*p2 = DS3231_Read(minuteREG);
-	*p2 = bcd_to_decimal(*p2);
-
-	switch (hour_format) {
-	case 1: {
-		tmp = DS3231_Read(hourREG);
-		tmp &= 0x20;
-		*p0 = (short) (tmp >> 5);
-		*p3 = (0x1F & DS3231_Read(hourREG));
-		*p3 = bcd_to_decimal(*p3);
-		break;
-	}
-	default: {
-		*p3 = (0x3F & DS3231_Read(hourREG));
-		*p3 = bcd_to_decimal(*p3);
-		break;
-	}
-	}
+void getTime(unsigned char *p3, unsigned char *p2, unsigned char *p1, short *p0)
+{
+	(void)p0;
+	uint32_t seconds = current_time / 1000;
+	*p1 = seconds % 60;
+	*p2 = seconds / 60 % 60;
+	*p3 = seconds / 3600 % 24;
 }
 
 void getDate(unsigned char *p4, unsigned char *p3, unsigned char *p2,
 		unsigned char *p1) {
-	*p1 = DS3231_Read(yearREG);
-	*p1 = bcd_to_decimal(*p1);
-	*p2 = (0x1F & DS3231_Read(monthREG));
-	*p2 = bcd_to_decimal(*p2);
-	*p3 = (0x3F & DS3231_Read(dateREG));
-	*p3 = bcd_to_decimal(*p3);
-	*p4 = (0x07 & DS3231_Read(dayREG));
-	*p4 = bcd_to_decimal(*p4);
+	// TODO
+	*p1 = 25;
+	*p2 = 7;
+	*p3 = 26;
+	*p4 = 0;
 }
 
-void RTC_setTime(unsigned char hSet, unsigned char mSet, unsigned char sSet,
-		short am_pm_state, short hour_format) {
-	unsigned char tmp = 0;
-	DS3231_Write(secondREG, (decimal_to_bcd(sSet)));
-	DS3231_Write(minuteREG, (decimal_to_bcd(mSet)));
-	switch (hour_format) {
-	case 1: {
-		switch (am_pm_state) {
-		case 1: {
-			tmp = 0x60;
-			break;
-		}
-		default: {
-			tmp = 0x40;
-			break;
-		}
-		}
-		DS3231_Write(hourREG, ((tmp | (0x1F & (decimal_to_bcd(hSet))))));
-		break;
-	}
-
-	default: {
-		DS3231_Write(hourREG, (0x3F & (decimal_to_bcd(hSet))));
-		break;
-	}
-	}
+void RTC_setTime(unsigned char hSet, unsigned char mSet, unsigned char sSet) {
+	(void)hSet;
+	(void)mSet;
+	(void)sSet;
 }
 
 void RTC_setDate(unsigned char daySet, unsigned char dateSet,
 		unsigned char monthSet, unsigned char yearSet) {
-	DS3231_Write(dayREG, (decimal_to_bcd(daySet)));
-	DS3231_Write(dateREG, (decimal_to_bcd(dateSet)));
-	DS3231_Write(monthREG, (decimal_to_bcd(monthSet)));
-	DS3231_Write(yearREG, (decimal_to_bcd(yearSet)));
+	// TODO
+	(void)daySet;
+	(void)dateSet;
+	(void)monthSet;
+	(void)yearSet;
 }
 
 void display_RealTime(int x, int y) {
@@ -164,7 +107,7 @@ void display_RealTime(int x, int y) {
 		return;
 	}
 	// fetch time from RTC
-	getTime(&rtc_hour, &rtc_minute, &rtc_second, &rtc_ampm, _24_hour_format);
+	getTime(&rtc_hour, &rtc_minute, &rtc_second, &rtc_ampm);
 	show_UTC_time(x, y, rtc_hour, rtc_minute, rtc_second, 0);
 	// further reduce date polling frequency
 	if (cnt % 25 != 0) {
@@ -181,7 +124,7 @@ void display_RealTime(int x, int y) {
 }
 
 void load_RealTime(void) {
-	getTime(&rtc_hour, &rtc_minute, &rtc_second, &rtc_ampm, _24_hour_format);
+	getTime(&rtc_hour, &rtc_minute, &rtc_second, &rtc_ampm);
 	s_RTC_Data[3].data = rtc_hour;
 	s_RTC_Data[4].data = rtc_minute;
 	s_RTC_Data[5].data = rtc_second;
@@ -193,8 +136,7 @@ void display_RTC_TimeEdit(int x, int y) {
 }
 
 void set_RTC_to_TimeEdit(void) {
-	RTC_setTime(s_RTC_Data[3].data, s_RTC_Data[4].data, s_RTC_Data[5].data, 0,
-			0);
+	RTC_setTime(s_RTC_Data[3].data, s_RTC_Data[4].data, s_RTC_Data[5].data);
 }
 
 void load_RealDate(void) {
@@ -231,7 +173,7 @@ void display_Real_Date(int x, int y) {
 
 void make_Real_Time(void) {
 
-	getTime(&rtc_hour, &rtc_minute, &rtc_second, &rtc_ampm, _24_hour_format);
+	getTime(&rtc_hour, &rtc_minute, &rtc_second, &rtc_ampm);
 	sprintf(log_rtc_time_string, "%02i%02i%02i", rtc_hour, rtc_minute,
 			rtc_second);
 }

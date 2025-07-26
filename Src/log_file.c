@@ -34,7 +34,7 @@
 #include "Display.h"
 #include "main.h"
 #include "gen_ft8.h"
-#include "DS3231.h"
+#include "FakeRTC.h"
 
 /* Fatfs structure */
 static FATFS FS;

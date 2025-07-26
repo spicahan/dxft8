@@ -25,7 +25,7 @@
 #include "log_file.h"
 #include "decode_ft8.h"
 #include "ADIF.h"
-#include "DS3231.h"
+#include "FakeRTC.h"
 
 /* For DECENDING order. Returns −1 if (a) > (b), 0 if equal, +1 if (a) < (b) */
 #define CMP(a, b)   ( ((a) < (b)) - ((a) > (b)) )

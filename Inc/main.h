@@ -21,7 +21,7 @@ void tx_display_update();
 
 #define MAX_QUEUE_SIZE 9
 
-extern uint32_t start_time, ft8_time;
+extern uint32_t start_time, current_time;
 
 extern int QSO_xmit;
 
