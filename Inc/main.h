@@ -68,7 +68,7 @@ void CAMERA_IO_Init(void);
 uint8_t CAMERA_IO_Read(uint8_t Addr, uint8_t Reg);
 void CAMERA_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value);
 
-extern uint32_t start_time, ft8_time;
+extern uint32_t start_time, current_time;
 extern int QSO_xmit;
 extern int slot_state;
 extern int target_slot;

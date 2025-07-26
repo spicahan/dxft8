@@ -4,7 +4,6 @@
 #include "Codec_Gains.h"
 #include "main.h"
 #include "button.h"
-#include "DS3231.h"
 
 #include "stdio.h"
 
@@ -16,7 +15,6 @@
 #include "ff_gen_drv.h"
 #include "sd_diskio.h"
 
-#include "DS3231.h"
 #include "log_file.h"
 
 #include "stdlib.h"

@@ -17,7 +17,7 @@
 #include "log_file.h"
 #include "gen_ft8.h"
 #include "traffic_manager.h"
-#include "DS3231.h"
+#include "FakeRTC.h"
 #include "SiLabs.h"
 #include "options.h"
 

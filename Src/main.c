@@ -32,7 +32,9 @@
 #include "Process_DSP.h"
 #include "Codec_Gains.h"
 #include "button.h"
-#include "DS3231.h"
+
+#include "FakeRTC.h"
+
 #include "SiLabs.h"
 #include "options.h"
 #include "autoseq_engine.h"
@@ -124,7 +126,7 @@ UART_HandleTypeDef huart6;
 SDRAM_HandleTypeDef hsdram1;
 
 /* USER CODE BEGIN PV */
-uint32_t start_time, ft8_time;
+uint32_t start_time, current_time;
 
 int QSO_xmit = 0;
 int target_slot;
@@ -203,7 +205,8 @@ void tx_display_update()
 
 static void update_synchronization(void)
 {
-	uint32_t current_time = HAL_GetTick();
+	static uint32_t ft8_time = 0;
+	current_time = HAL_GetTick();
 	ft8_time = current_time - start_time;
 
 	// Update slot and reset RX
@@ -347,7 +350,6 @@ int main(void)
 
   CAMERA_IO_Init();
   HAL_Delay(10);
-  DS3231_init();
   display_Real_Date(0, 240);
 
   start_Si5351();

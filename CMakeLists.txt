@@ -91,8 +91,8 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/ADIF.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/Codec_Gains.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/DS3231.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/Display.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/FakeRTC.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/FIR_Coefficients.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/Ini.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/Process_DSP.c
