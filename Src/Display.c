@@ -69,7 +69,7 @@ void show_UTC_time(uint16_t x, uint16_t y, int utc_hours, int utc_minutes,
 
 void show_Real_Date(uint16_t x, uint16_t y, int date, int month, int year)
 {
-	sprintf(rtc_date_string, "%02i/%02i/%02i", date, month, year);
+	sprintf(rtc_date_string, "%02i/%02i/%02i", month, date, year);
 	BSP_LCD_SetFont(&Font16);
 	BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
 	BSP_LCD_DisplayStringAt(x, y, (const uint8_t *)rtc_date_string, LEFT_MODE);
