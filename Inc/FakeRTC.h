@@ -20,23 +20,12 @@ typedef struct
 
 extern RTCStruct s_RTC_Data[];
 
-extern int RTC_Set_Flag;
-
 #define RTC_STRING_SIZE 13
 #define FILENAME_STRING_SIZE 24
 
 extern char log_rtc_time_string[RTC_STRING_SIZE];
 extern char log_rtc_date_string[RTC_STRING_SIZE];
 extern char file_name_string[FILENAME_STRING_SIZE];
-
-void getTime(unsigned char *hour, unsigned char *minute, unsigned char *second,
-		short *am_pm);
-void getDate(unsigned char *day_of_week, unsigned char *date,
-		unsigned char *month, unsigned char *year);
-
-void RTC_setTime(unsigned char hSet, unsigned char mSet, unsigned char sSet);
-void RTC_setDate(unsigned char daySet, unsigned char dateSet,
-		unsigned char monthSet, unsigned char yearSet);
 
 void display_RealTime(int x, int y);
 void display_Real_Date(int x, int y);

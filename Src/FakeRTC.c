@@ -13,11 +13,16 @@
 char log_rtc_time_string[RTC_STRING_SIZE];
 char log_rtc_date_string[RTC_STRING_SIZE];
 
-static unsigned char rtc_hour, rtc_minute, rtc_second, rtc_dow, rtc_date, rtc_month,
-		rtc_year;
-static short rtc_ampm;
+static unsigned char rtc_hour, rtc_minute, rtc_second;
+static unsigned char rtc_date = 26, rtc_month = 7, rtc_year = 25;
+static unsigned char new_rtc_date = 26, new_rtc_month = 7, new_rtc_year = 25;
 
 char file_name_string[FILENAME_STRING_SIZE];
+
+static uint32_t rtc_offset = 0;
+
+static void getTime();
+static void advance_date();
 
 RTCStruct s_RTC_Data[] = { {
 /*Name*/"  Day ", //opt0
@@ -58,45 +63,60 @@ RTCStruct s_RTC_Data[] = { {
 
 };
 
-unsigned char bcd_to_decimal(unsigned char d) {
-	return ((d & 0x0F) + (((d & 0xF0) >> 4) * 10));
-}
-
-unsigned char decimal_to_bcd(unsigned char d) {
-	return (((d / 10) << 4) & 0xF0) | ((d % 10) & 0x0F);
-}
-
-void getTime(unsigned char *p3, unsigned char *p2, unsigned char *p1, short *p0)
+void getTime()
 {
-	(void)p0;
-	uint32_t seconds = current_time / 1000;
-	*p1 = seconds % 60;
-	*p2 = seconds / 60 % 60;
-	*p3 = seconds / 3600 % 24;
+	bool was_last_second = rtc_hour == 23 && rtc_minute == 59 && rtc_second == 59;
+	uint32_t seconds = (current_time + rtc_offset) / 1000;
+	rtc_second = seconds % 60;
+	rtc_minute = seconds / 60 % 60;
+	rtc_hour = seconds / 3600 % 24;
+	bool first_second = seconds % 86400 == 0;
+	if (was_last_second && first_second) {
+		advance_date();
+	}
 }
 
-void getDate(unsigned char *p4, unsigned char *p3, unsigned char *p2,
-		unsigned char *p1) {
-	// TODO
-	*p1 = 25;
-	*p2 = 7;
-	*p3 = 26;
-	*p4 = 0;
+static void advance_date()
+{
+	new_rtc_date++;
+	
+	unsigned char days_in_month = 31;
+	if (rtc_month == 4 || rtc_month == 6 || rtc_month == 9 || rtc_month == 11) {
+		days_in_month = 30;
+	} else if (rtc_month == 2) {
+		bool is_leap_year = ((rtc_year % 4) == 0) && (((rtc_year % 100) != 0) || ((rtc_year % 400) == 0));
+		days_in_month = is_leap_year ? 29 : 28;
+	}
+	
+	if (new_rtc_date > days_in_month) {
+		new_rtc_date = 1;
+		new_rtc_month++;
+		if (new_rtc_month > 12) {
+			new_rtc_month = 1;
+			new_rtc_year++;
+			if (new_rtc_year > 99) {
+				new_rtc_year = 0;
+			}
+		}
+	}
 }
 
-void RTC_setTime(unsigned char hSet, unsigned char mSet, unsigned char sSet) {
-	(void)hSet;
-	(void)mSet;
-	(void)sSet;
+static void getDate() {
+	rtc_date = new_rtc_date;
+	rtc_month = new_rtc_month;
+	rtc_year = new_rtc_year;
 }
 
-void RTC_setDate(unsigned char daySet, unsigned char dateSet,
-		unsigned char monthSet, unsigned char yearSet) {
-	// TODO
-	(void)daySet;
-	(void)dateSet;
-	(void)monthSet;
-	(void)yearSet;
+static void RTC_setTime(unsigned char hSet, unsigned char mSet, unsigned char sSet) {
+	uint32_t cur_ms = current_time % 86400000;
+	uint32_t new_ms = (hSet * 3600 + mSet * 60 + sSet) * 1000;
+	rtc_offset = new_ms + 86400000 - cur_ms;
+}
+
+static void RTC_setDate(unsigned char dateSet, unsigned char monthSet, unsigned char yearSet) {
+	new_rtc_date = dateSet;
+	new_rtc_month = monthSet;
+	new_rtc_year = yearSet;
 }
 
 void display_RealTime(int x, int y) {
@@ -106,17 +126,13 @@ void display_RealTime(int x, int y) {
 	if (cnt % 5 != 0) {
 		return;
 	}
-	// fetch time from RTC
-	getTime(&rtc_hour, &rtc_minute, &rtc_second, &rtc_ampm);
-	show_UTC_time(x, y, rtc_hour, rtc_minute, rtc_second, 0);
-	// further reduce date polling frequency
-	if (cnt % 25 != 0) {
-		return;
-	}
 	unsigned char old_rtc_year = rtc_year;
 	unsigned char old_rtc_month = rtc_month;
 	unsigned char old_rtc_date = rtc_date;
-	getDate(&rtc_dow, &rtc_date, &rtc_month, &rtc_year);
+	// fetch time from RTC
+	getTime();
+	show_UTC_time(x, y, rtc_hour, rtc_minute, rtc_second, 0);
+	getDate();
 	if (rtc_date != old_rtc_date || rtc_month != old_rtc_month || rtc_year != old_rtc_year) {
 		display_Real_Date(0, 240);
 		Init_Log_File();
@@ -124,7 +140,7 @@ void display_RealTime(int x, int y) {
 }
 
 void load_RealTime(void) {
-	getTime(&rtc_hour, &rtc_minute, &rtc_second, &rtc_ampm);
+	getTime();
 	s_RTC_Data[3].data = rtc_hour;
 	s_RTC_Data[4].data = rtc_minute;
 	s_RTC_Data[5].data = rtc_second;
@@ -140,7 +156,7 @@ void set_RTC_to_TimeEdit(void) {
 }
 
 void load_RealDate(void) {
-	getDate(&rtc_dow, &rtc_date, &rtc_month, &rtc_year);
+	getDate();
 	if (rtc_date > 0)
 		s_RTC_Data[0].data = rtc_date;
 	else
@@ -163,24 +179,23 @@ void display_RTC_DateEdit(int x, int y) {
 }
 
 void set_RTC_to_DateEdit(void) {
-	RTC_setDate(0, s_RTC_Data[0].data, s_RTC_Data[1].data, s_RTC_Data[2].data);
+	RTC_setDate(s_RTC_Data[0].data, s_RTC_Data[1].data, s_RTC_Data[2].data);
 }
 
 void display_Real_Date(int x, int y) {
-	getDate(&rtc_dow, &rtc_date, &rtc_month, &rtc_year);
+	getDate();
 	show_Real_Date(x, y, rtc_date, rtc_month, rtc_year);
 }
 
 void make_Real_Time(void) {
-
-	getTime(&rtc_hour, &rtc_minute, &rtc_second, &rtc_ampm);
+	getTime();
 	sprintf(log_rtc_time_string, "%02i%02i%02i", rtc_hour, rtc_minute,
 			rtc_second);
 }
 
 void make_Real_Date(void) {
 
-	getDate(&rtc_dow, &rtc_date, &rtc_month, &rtc_year);
+	getDate();
 	sprintf(log_rtc_date_string, "20%02i%02i%02i", rtc_year,
 			rtc_month, rtc_date);
 }
