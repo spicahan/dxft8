@@ -26,8 +26,6 @@ q15_t FT8_Data[2048 / 2];
 uint16_t buff_offset;
 
 int DSP_Flag;
-int Xmit_Mode = 0;
-int xmit_flag, ft8_xmit_counter, ft8_xmit_delay;
 
 #define PI2 6.2831853071795864765
 #define KCONV 10430.37835 // 		4096*16/PI2

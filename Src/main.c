@@ -53,7 +53,7 @@
 #include "log_file.h"
 #include "Display.h"
 #include "qso_display.h"
-#include "traffic_manager.h"
+#include "RadioInterface.h"
 
 uint32_t start_time, current_time;
 
@@ -67,6 +67,9 @@ int was_txing = 0;
 bool clr_pressed = false;
 bool free_text = false;
 bool tx_pressed = false;
+int ft8_xmit_counter = 0;
+int ft8_xmit_delay = 0;
+int xmit_flag = 0;
 
 // Autoseq TX text buffer
 static char autoseq_txbuf[MAX_MSG_LEN];
@@ -173,8 +176,6 @@ int main(void)
 	SystemClock_Config();
 
 	start_audio_I2C();
-
-	PTT_Out_Init();
 
 	Init_BoardVersionInput();
 	Check_Board_Version();

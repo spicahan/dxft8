@@ -33,6 +33,9 @@ extern int was_txing;
 extern bool clr_pressed;
 extern bool tx_pressed;
 extern bool free_text;
+extern int ft8_xmit_counter;
+extern int ft8_xmit_delay;
+extern int xmit_flag;
 
 extern const char* test_data_file;
 
