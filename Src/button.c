@@ -16,7 +16,7 @@
 #include "Process_DSP.h"
 #include "log_file.h"
 #include "gen_ft8.h"
-#include "traffic_manager.h"
+#include "RadioInterface.h"
 #include "FakeRTC.h"
 #include "SiLabs.h"
 #include "options.h"
@@ -732,12 +732,10 @@ void executeButton(uint16_t index)
 		if (!sButtonData[QSOBeacon].state)
 		{
 			Beacon_On = 0;
-			Beacon_State = 0;
 		}
 		else
 		{
 			Beacon_On = 1;
-			Beacon_State = 1;
 		}
 		break;
 
@@ -1207,32 +1205,6 @@ void erase_Cal_Display(void)
 	Options_StoreValue(OPTION_Skip_Tx1);
 }
 
-void PTT_Out_Init(void)
-{
-	GPIO_InitTypeDef gpio_init_structure;
-
-	__HAL_RCC_GPIOI_CLK_ENABLE();
-
-	gpio_init_structure.Pin = GPIO_PIN_2; // D8  RXSW
-	gpio_init_structure.Mode = GPIO_MODE_OUTPUT_OD;
-	gpio_init_structure.Pull = GPIO_PULLUP;
-	gpio_init_structure.Speed = GPIO_SPEED_HIGH;
-
-	HAL_GPIO_Init(GPIOI, &gpio_init_structure);
-
-	HAL_GPIO_WritePin(GPIOI, GPIO_PIN_2, GPIO_PIN_SET); // Set = Receive connect
-
-	__HAL_RCC_GPIOA_CLK_ENABLE();
-
-	gpio_init_structure.Pin = GPIO_PIN_15; // D9 TXSW
-	gpio_init_structure.Mode = GPIO_MODE_OUTPUT_OD;
-	gpio_init_structure.Pull = GPIO_PULLUP;
-	gpio_init_structure.Speed = GPIO_SPEED_HIGH;
-
-	HAL_GPIO_Init(GPIOA, &gpio_init_structure);
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET); // Set = Receive short
-}
-
 void Init_BoardVersionInput(void)
 {
 	GPIO_InitTypeDef gpio_init_structure;
@@ -1252,20 +1224,6 @@ void Init_BoardVersionInput(void)
 void DeInit_BoardVersionInput(void)
 {
 	HAL_GPIO_DeInit(GPIOH, GPIO_PIN_6);
-}
-
-void PTT_Out_Set(void)
-{
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);
-	HAL_Delay(1);
-	HAL_GPIO_WritePin(GPIOI, GPIO_PIN_2, GPIO_PIN_SET);
-}
-
-void PTT_Out_RST_Clr(void)
-{
-	HAL_GPIO_WritePin(GPIOI, GPIO_PIN_2, GPIO_PIN_RESET);
-	HAL_Delay(1);
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET);
 }
 
 void RLY_Select_20to40(void)
@@ -1316,16 +1274,12 @@ void set_codec_input_gain(void)
 
 void receive_sequence(void)
 {
-	PTT_Out_Set(); // set output high to connect receiver to antenna
-	HAL_Delay(10);
 	sButtonData[RxTx].state = 0;
 	drawButton(RxTx);
 }
 
 void xmit_sequence(void)
 {
-	PTT_Out_RST_Clr(); // set output low to disconnect receiver from antenna
-	HAL_Delay(10);
 	sButtonData[RxTx].state = 1;
 	drawButton(RxTx);
 }

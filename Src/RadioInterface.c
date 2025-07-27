@@ -5,14 +5,13 @@
  *      Author: user
  */
 
+#include <stdbool.h>
 #include <Display.h>
 #include "button.h"
-#include "gen_ft8.h"
-#include "decode_ft8.h"
-#include "stm32746g_discovery_lcd.h"
-#include "SDR_Audio.h"
-#include "traffic_manager.h"
-#include "SiLabs.h"
+// #include "gen_ft8.h"
+// #include "decode_ft8.h"
+// #include "SDR_Audio.h"
+#include "RadioInterface.h"
 #include "Process_DSP.h"
 #include "Codec_Gains.h"
 #include "main.h"
@@ -22,18 +21,24 @@ const int ADC_DVC_Off = 90;
 
 #define FT8_TONE_SPACING 625
 
-int Beacon_State;
+static uint64_t F_Long;
+
+static void set_freq(uint64_t freq);
+static void transmit();
+static void receive();
 
 void setup_to_transmit_on_next_DSP_Flag(void)
 {
 	ft8_xmit_counter = 0;
 	xmit_sequence();
+	transmit();
 	ft8_transmit_sequence();
 	xmit_flag = 1;
 }
 
 void terminate_QSO(void)
 {
+	receive();
 	ft8_receive_sequence();
 	receive_sequence();
 	xmit_flag = 0;
@@ -50,7 +55,7 @@ void ft8_transmit_sequence(void)
 
 void ft8_receive_sequence(void)
 {
-	output_enable(SI5351_CLK0, 0);
+	receive();
 	HAL_Delay(10);
 	Set_ADC_DVC(ADC_DVC_Gain);
 }
@@ -61,32 +66,44 @@ void tune_On_sequence(void)
 	HAL_Delay(10);
 	set_Xmit_Freq();
 	HAL_Delay(10);
-	output_enable(SI5351_CLK0, 1);
+	transmit();
 }
 
 void tune_Off_sequence(void)
 {
-	output_enable(SI5351_CLK0, 0);
-	HAL_Delay(10);
-	Set_ADC_DVC(ADC_DVC_Gain);
+	ft8_receive_sequence();
 }
-
-static uint64_t F_Long;
 
 void set_Xmit_Freq(void)
 {
 	F_Long = ((start_freq * 1000ULL + (uint16_t)NCO_Frequency) * 100ULL);
-	set_freq(F_Long, SI5351_CLK0);
+	set_freq(F_Long);
 }
 
 void set_FT8_Tone(uint8_t ft8_tone)
 {
 	uint64_t F_FT8 = F_Long + (uint64_t)ft8_tone * FT8_TONE_SPACING;
-	set_freq(F_FT8, SI5351_CLK0);
+	set_freq(F_FT8);
 }
 
 void set_Rcvr_Freq(void)
 {
 	uint64_t F_Receive = ((start_freq * 1000ULL - 10000ULL) * 100ULL * 4ULL);
-	set_freq(F_Receive, SI5351_CLK1);
+	set_freq(F_Receive);
+}
+
+// Radio implementation
+static void transmit()
+{
+
+}
+
+static void receive()
+{
+
+}
+
+static void set_freq(uint64_t freq)
+{
+	(void)freq;
 }

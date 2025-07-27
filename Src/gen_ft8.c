@@ -31,7 +31,6 @@
 #include "decode_ft8.h"
 #include "Display.h"
 #include "log_file.h"
-#include "traffic_manager.h"
 #include "ADIF.h"
 
 #include "button.h"

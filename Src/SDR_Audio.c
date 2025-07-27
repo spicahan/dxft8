@@ -26,8 +26,6 @@ q15_t FT8_Data[2048 / 2];
 // DSP_Flag encoding: 0=idle, 1=second half ready, 2=first half ready
 // Main loop uses (DSP_Flag & 1) to derive offset: 1->BUFFERSIZE/2, 0->0
 volatile int DSP_Flag;
-int Xmit_Mode = 0;
-int xmit_flag, ft8_xmit_counter, ft8_xmit_delay;
 
 #define PI2 6.2831853071795864765
 #define KCONV 10430.37835 // 		4096*16/PI2
