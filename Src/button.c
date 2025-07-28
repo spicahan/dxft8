@@ -818,14 +818,12 @@ void executeButton(uint16_t index)
 		{
 			tune_Off_sequence();
 			Arm_Tune = 0;
-			xmit_flag = 0;
 			receive_sequence();
 		}
 		else
 		{
 			xmit_sequence();
 			HAL_Delay(10);
-			xmit_flag = 1;
 			tune_On_sequence();
 			Arm_Tune = 1;
 		}
