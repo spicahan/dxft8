@@ -34,6 +34,8 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+/* UART handler declared in "Uart.c" file */
+extern UART_HandleTypeDef UartHandle;
 
 /* SAI handler declared in "stm32746g_discovery_audio.c" file */
 extern SAI_HandleTypeDef haudio_out_sai;
@@ -141,6 +143,42 @@ void SysTick_Handler(void) {
 /*  available peripheral interrupt handler's name please refer to the startup */
 /*  file (startup_stm32f7xx.s).                                               */
 /******************************************************************************/
+/**
+  * @brief  This function handles DMA interrupt request.  
+  * @param  None
+  * @retval None
+  * @Note   This function is redefined in "main.h" and related to DMA  
+  *         used for USART data transmission     
+  */
+void USARTx_DMA_RX_IRQHandler(void)
+{
+  HAL_DMA_IRQHandler(UartHandle.hdmarx);
+}
+
+/**
+  * @brief  This function handles DMA interrupt request.
+  * @param  None
+  * @retval None
+  * @Note   This function is redefined in "main.h" and related to DMA  
+  *         used for USART data reception    
+  */
+void USARTx_DMA_TX_IRQHandler(void)
+{
+  HAL_DMA_IRQHandler(UartHandle.hdmatx);
+}
+
+
+/**
+  * @brief  This function handles UART interrupt request.  
+  * @param  None
+  * @retval None
+  * @Note   This function is redefined in "main.h" and related to DMA  
+  *         used for USART data transmission     
+  */
+void USARTx_IRQHandler(void)
+{
+  HAL_UART_IRQHandler(&UartHandle);
+}
 
 /**
  * @brief  This function handles USB-On-The-Go FS/HS global interrupt request.
