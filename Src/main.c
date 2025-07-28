@@ -41,7 +41,6 @@
 
 #include "FakeRTC.h"
 
-#include "SiLabs.h"
 
 #include "options.h"
 #endif
@@ -199,7 +198,7 @@ int main(void)
 	HAL_Delay(10);
 	display_Real_Date(0, 240);
 
-	start_Si5351();
+	radio_init();
 
 	Set_Cursor_Frequency();
 	show_variable(400, 25, (int)NCO_Frequency);
@@ -255,8 +254,8 @@ int main(int argc, char *argv[]) {
 				}
 				else
 				{
-					if (++ft8_xmit_delay == 16)
-						output_enable(SI5351_CLK0, 1);
+					// if (++ft8_xmit_delay == 16)
+						// output_enable(SI5351_CLK0, 1);
 				}
 			}
 

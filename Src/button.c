@@ -19,7 +19,6 @@
 #include "gen_ft8.h"
 #include "RadioInterface.h"
 #include "FakeRTC.h"
-#include "SiLabs.h"
 #include "options.h"
 
 int Tune_On; // 0 = Receive, 1 = Xmit Tune Signal
@@ -1286,19 +1285,6 @@ void xmit_sequence(void)
 }
 
 const uint64_t F_boot = 11229600000ULL;
-
-void start_Si5351(void)
-{
-	init(SI5351_CRYSTAL_LOAD_0PF, 0);
-	drive_strength(SI5351_CLK0, SI5351_DRIVE_8MA);
-	drive_strength(SI5351_CLK1, SI5351_DRIVE_2MA);
-	drive_strength(SI5351_CLK2, SI5351_DRIVE_2MA);
-	set_freq(F_boot, SI5351_CLK1);
-	HAL_Delay(10);
-	output_enable(SI5351_CLK1, 1);
-	HAL_Delay(20);
-	set_Rcvr_Freq();
-}
 
 void FT8_Sync(void)
 {

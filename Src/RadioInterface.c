@@ -14,6 +14,7 @@
 #include "RadioInterface.h"
 #include "Process_DSP.h"
 #include "Codec_Gains.h"
+#include "Uart.h"
 #include "main.h"
 
 const int ADC_DVC_Gain = 180;
@@ -26,6 +27,11 @@ static uint64_t F_Long;
 static void set_freq(uint64_t freq);
 static void transmit();
 static void receive();
+
+void radio_init(void)
+{
+	uart_init();
+}
 
 void setup_to_transmit_on_next_DSP_Flag(void)
 {
@@ -95,12 +101,20 @@ void set_Rcvr_Freq(void)
 // Radio implementation
 static void transmit()
 {
-
+	if (xmit_flag) {
+		return;
+	}
+	uart_tx("SWH16;");
+	xmit_flag = 1;
 }
 
 static void receive()
 {
-
+	if (!xmit_flag) {
+		return;
+	}
+	uart_tx("SWH16;");
+	xmit_flag = 0;
 }
 
 static void set_freq(uint64_t freq)

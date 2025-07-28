@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 
+void radio_init(void);
 void setup_to_transmit_on_next_DSP_Flag(void);
 void terminate_QSO(void);
 void set_Xmit_Freq(void);

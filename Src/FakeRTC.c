@@ -1,10 +1,3 @@
-/*
- * DS3231.c
- *
- *  Created on: Dec 25, 2019
- *      Author: user
- */
-
 #include "FakeRTC.h"
 #include "Display.h"
 #include "main.h"
@@ -14,8 +7,8 @@ char log_rtc_time_string[RTC_STRING_SIZE];
 char log_rtc_date_string[RTC_STRING_SIZE];
 
 static unsigned char rtc_hour, rtc_minute, rtc_second;
-static unsigned char rtc_date = 26, rtc_month = 7, rtc_year = 25;
-static unsigned char new_rtc_date = 26, new_rtc_month = 7, new_rtc_year = 25;
+static unsigned char rtc_date = 7, rtc_month = 1, rtc_year = 25;
+static unsigned char new_rtc_date = 29, new_rtc_month = 7, new_rtc_year = 25;
 
 char file_name_string[FILENAME_STRING_SIZE];
 
