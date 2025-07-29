@@ -42,8 +42,6 @@ extern SAI_HandleTypeDef haudio_out_sai;
 /* I2S handler declared in "stm32746g_discovery_audio.c" file */
 extern SAI_HandleTypeDef haudio_in_sai;
 
-//extern UART_HandleTypeDef UartHandle;
-
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 //#define    USE_USB_FS
@@ -144,31 +142,6 @@ void SysTick_Handler(void) {
 /*  file (startup_stm32f7xx.s).                                               */
 /******************************************************************************/
 /**
-  * @brief  This function handles DMA interrupt request.  
-  * @param  None
-  * @retval None
-  * @Note   This function is redefined in "main.h" and related to DMA  
-  *         used for USART data transmission     
-  */
-void USARTx_DMA_RX_IRQHandler(void)
-{
-  HAL_DMA_IRQHandler(UartHandle.hdmarx);
-}
-
-/**
-  * @brief  This function handles DMA interrupt request.
-  * @param  None
-  * @retval None
-  * @Note   This function is redefined in "main.h" and related to DMA  
-  *         used for USART data reception    
-  */
-void USARTx_DMA_TX_IRQHandler(void)
-{
-  HAL_DMA_IRQHandler(UartHandle.hdmatx);
-}
-
-
-/**
   * @brief  This function handles UART interrupt request.  
   * @param  None
   * @retval None
@@ -185,6 +158,15 @@ void USARTx_IRQHandler(void)
  * @param  None
  * @retval None
  */
+
+/**
+  * @brief  This function handles PPP interrupt request.
+  * @param  None
+  * @retval None
+  */
+/*void PPP_IRQHandler(void)
+{
+}*/
 
 /**
  * @brief This function handles DMA2 Stream 4 interrupt request.
