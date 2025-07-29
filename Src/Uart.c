@@ -65,10 +65,10 @@ void uart_tx(const char *data)
   }
   
   /* Wait for transmission to complete */
-  // while (UartReady != SET)
-  // {
-  //   /* Wait */
-  // }
+  while (UartReady != SET)
+  {
+    /* Wait */
+  }
   /* Reset transmission flag */
   UartReady = RESET;
 }

@@ -82,19 +82,19 @@ void tune_Off_sequence(void)
 
 void set_Xmit_Freq(void)
 {
-	F_Long = ((start_freq * 1000ULL + (uint16_t)NCO_Frequency) * 100ULL);
+	F_Long = start_freq * 1000ULL + (uint16_t)NCO_Frequency;
 	set_freq(F_Long);
 }
 
 void set_FT8_Tone(uint8_t ft8_tone)
 {
-	uint64_t F_FT8 = F_Long + (uint64_t)ft8_tone * FT8_TONE_SPACING;
+	uint64_t F_FT8 = (F_Long * 100ULL + (uint64_t)ft8_tone * FT8_TONE_SPACING) / 100ULL;
 	set_freq(F_FT8);
 }
 
 void set_Rcvr_Freq(void)
 {
-	uint64_t F_Receive = ((start_freq * 1000ULL - 10000ULL) * 100ULL * 4ULL);
+	uint64_t F_Receive = start_freq * 1000ULL;
 	set_freq(F_Receive);
 }
 
@@ -119,5 +119,7 @@ static void receive()
 
 static void set_freq(uint64_t freq)
 {
-	(void)freq;
+	char cat_cmd[15];
+	snprintf(cat_cmd, sizeof(cat_cmd), "FA%.011lu;", (uint32_t)freq);
+	uart_tx(cat_cmd);
 }
