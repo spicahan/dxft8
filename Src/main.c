@@ -245,9 +245,9 @@ int main(int argc, char *argv[]) {
 
 						if (ft8_xmit_counter == 79)
 						{
-							xmit_flag = 0;
 							ft8_receive_sequence();
 							receive_sequence();
+							xmit_flag = 0;
 							ft8_xmit_delay = 0;
 						}
 					}
