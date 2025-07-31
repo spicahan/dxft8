@@ -54,7 +54,7 @@ void terminate_QSO(void)
 void ft8_transmit_sequence(void)
 {
 	Set_ADC_DVC(ADC_DVC_Off);
-	HAL_Delay(10);
+	// HAL_Delay(10);
 	set_Xmit_Freq();
 	HAL_Delay(10);
 }
@@ -62,7 +62,8 @@ void ft8_transmit_sequence(void)
 void ft8_receive_sequence(void)
 {
 	receive();
-	HAL_Delay(10);
+	// HAL_Delay(10);
+	set_Rcvr_Freq();
 	Set_ADC_DVC(ADC_DVC_Gain);
 }
 
