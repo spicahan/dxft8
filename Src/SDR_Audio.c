@@ -108,7 +108,7 @@ int frame_counter = 0;
 void I2S2_RX_ProcessBuffer(uint16_t offset)
 {
 	// static long NCO_phz = 0;
-
+#if 0
 	for (int i = 0; i < BUFFERSIZE / 4; i++)
 	{
 		// NCO_phz += NCOphzinc;
@@ -122,14 +122,17 @@ void I2S2_RX_ProcessBuffer(uint16_t offset)
 
 	Process_FIR_I_32K();
 	Process_FIR_Q_32K();
+#endif
 
 	// Decimation
 	uint8_t  decimator = 0;
 	uint16_t ft8_pos = frame_counter * 256;
 	for (int i = 0; i < BUFFERSIZE / 4; i++)
 	{
-		USB_Out[i] = FIR_I_Out[i] - FIR_Q_Out[i];
-		LSB_Out[i] = FIR_I_Out[i] + FIR_Q_Out[i];
+		// USB_Out[i] = FIR_I_Out[i] - FIR_Q_Out[i];
+		// LSB_Out[i] = FIR_I_Out[i] + FIR_Q_Out[i];
+		USB_Out[i] = in_buff[offset + i * 2 + 0];
+		LSB_Out[i] = in_buff[offset + i * 2 + 1];
 
 		if (++decimator == 5) {
 			decimator = 0;
