@@ -43,7 +43,7 @@ const char *start;
 FreqStruct sBand_Data[NumBands] =
 	{
 		{// 40,
-		 7074, "7.074"},
+		 7074, "7.075"},
 		{// 30,
 		 10136, "10.136"},
 		{// 20,
@@ -55,7 +55,9 @@ FreqStruct sBand_Data[NumBands] =
 		{// 12,
 		 24915, "24.916"},
 		{// 10,
-		 28074, "28.075"}};
+		 28074, "28.075"},
+		{// 6,
+		 50313, "50.314"}};
 
 ButtonStruct sButtonData[NumButtons] = {
 	{// button 0  inhibit xmit either as beacon or answer CQ
@@ -662,17 +664,6 @@ void checkButton(void)
 	}
 }
 
-void SelectFilterBlock()
-{
-	if (Band_Minimum == _40M)
-	{
-		if (BandIndex < _17M) // i.e. 40M, 30M or 20M
-			RLY_Select_20to40();
-		else
-			RLY_Select_10to17();
-	}
-}
-
 static void toggle_button_state(int button)
 {
 	sButtonData[button].state = 1;
@@ -839,8 +830,6 @@ void executeButton(uint16_t index)
 
 		set_Rcvr_Freq();
 		HAL_Delay(10);
-
-		SelectFilterBlock();
 
 		toggle_button_state(SaveBand);
 		break;
@@ -1070,7 +1059,7 @@ void executeCalibrationButton(uint16_t index)
 		break;
 
 	case BandUp:
-		if (BandIndex < _10M)
+		if (BandIndex < NumBands - 1)
 		{
 			BandIndex++;
 			show_wide(340, 55, sBand_Data[BandIndex].Frequency);
@@ -1224,41 +1213,9 @@ void DeInit_BoardVersionInput(void)
 	HAL_GPIO_DeInit(GPIOH, GPIO_PIN_6);
 }
 
-void RLY_Select_20to40(void)
-{
-	HAL_GPIO_WritePin(GPIOI, GPIO_PIN_3, GPIO_PIN_SET);
-}
-
-void RLY_Select_10to17(void)
-{
-	HAL_GPIO_WritePin(GPIOI, GPIO_PIN_3, GPIO_PIN_RESET);
-}
-
-static void Init_BandSwitchOutput(void)
-{
-	GPIO_InitTypeDef gpio_init_structure;
-
-	gpio_init_structure.Pin = GPIO_PIN_3; // D7  RLY
-	gpio_init_structure.Mode = GPIO_MODE_OUTPUT_OD;
-	gpio_init_structure.Pull = GPIO_PULLUP;
-	gpio_init_structure.Speed = GPIO_SPEED_HIGH;
-
-	HAL_GPIO_Init(GPIOI, &gpio_init_structure);
-
-	HAL_GPIO_WritePin(GPIOI, GPIO_PIN_3, GPIO_PIN_RESET);
-}
-
 void Check_Board_Version(void)
 {
 	Band_Minimum = _20M;
-
-	// GPIO Pin 6 is grounded for new model
-	if (HAL_GPIO_ReadPin(GPIOH, GPIO_PIN_6) == 0)
-	{
-		Init_BandSwitchOutput();
-
-		Band_Minimum = _40M;
-	}
 
 	Options_SetMinimum(Band_Minimum);
 }

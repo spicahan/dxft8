@@ -86,7 +86,8 @@ enum BandIndex
 	_15M = 4,
 	_12M = 5,
 	_10M = 6,
-	NumBands = 7
+	_6M = 7,
+	NumBands
 };
 
 enum ButtonIds

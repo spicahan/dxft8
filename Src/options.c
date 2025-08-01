@@ -80,7 +80,6 @@ int16_t Options_Initialize(void)
 	start_freq = sBand_Data[BandIndex].Frequency;
 	show_wide(380, 0, (int)start_freq);
 
-	SelectFilterBlock();
 	return result;
 }
 
