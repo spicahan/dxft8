@@ -107,7 +107,7 @@ static void transmit()
 	if (xmit_flag) {
 		return;
 	}
-	uart_tx("SWH16;");
+	uart_tx("MD3;AP1;SWH16;");
 	xmit_flag = 1;
 }
 
@@ -116,7 +116,7 @@ static void receive()
 	if (!xmit_flag) {
 		return;
 	}
-	uart_tx("SWH16;");
+	uart_tx("SWH16;MD2;");
 	xmit_flag = 0;
 }
 
