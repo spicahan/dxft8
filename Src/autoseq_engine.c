@@ -31,7 +31,8 @@ extern int Beacon_On; // TODO get rid of manual extern
 extern int Skip_Tx1;  // TODO get rid of manual extern
 
 /***** Compile‑time knobs *****/
-#define MAX_TX_RETRY 5
+#define MAX_TX_RETRY 4
+#define MAX_ROGERS_RETRY 2 // RR73
 
 /* For DECENDING order. Returns −1 if (a) > (b), 0 if equal, +1 if (a) < (b) */
 #define CMP(a, b)   ( ((a) < (b)) - ((a) > (b)) )
@@ -511,7 +512,7 @@ static bool generate_response(ctx_t *ctx, const Decode *msg, bool override)
                 set_state(ctx, AS_ROGER_REPORT, TX3, MAX_TX_RETRY);
                 return true;
             case TX3:
-                set_state(ctx, AS_ROGERS, TX4, MAX_TX_RETRY);
+                set_state(ctx, AS_ROGERS, TX4, MAX_ROGERS_RETRY);
                 return true;
             default:
                 return false;
@@ -528,7 +529,7 @@ static bool generate_response(ctx_t *ctx, const Decode *msg, bool override)
                 set_state(ctx, AS_ROGER_REPORT, TX3, MAX_TX_RETRY);
                 return true;
             case TX3:
-                set_state(ctx, AS_ROGERS, TX4, MAX_TX_RETRY);
+                set_state(ctx, AS_ROGERS, TX4, MAX_ROGERS_RETRY);
                 return true;
 
             // QSO complete without signal report exchange
@@ -554,7 +555,7 @@ static bool generate_response(ctx_t *ctx, const Decode *msg, bool override)
             //     return true;
 
             case TX3:
-                set_state(ctx, AS_ROGERS, TX4, MAX_TX_RETRY);
+                set_state(ctx, AS_ROGERS, TX4, MAX_ROGERS_RETRY);
                 return true;
             // QSO complete without signal report exchange
             case TX4:
