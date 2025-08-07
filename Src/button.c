@@ -1215,7 +1215,7 @@ void DeInit_BoardVersionInput(void)
 
 void Check_Board_Version(void)
 {
-	Band_Minimum = _20M;
+	Band_Minimum = _40M;
 
 	Options_SetMinimum(Band_Minimum);
 }

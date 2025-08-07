@@ -8,7 +8,7 @@ char log_rtc_date_string[RTC_STRING_SIZE];
 
 static unsigned char rtc_hour, rtc_minute, rtc_second;
 static unsigned char rtc_date = 7, rtc_month = 1, rtc_year = 25;
-static unsigned char new_rtc_date = 1, new_rtc_month = 8, new_rtc_year = 25;
+static unsigned char new_rtc_date = 8, new_rtc_month = 8, new_rtc_year = 25;
 
 char file_name_string[FILENAME_STRING_SIZE];
 
