@@ -89,7 +89,7 @@ void set_Xmit_Freq(void)
 
 void set_FT8_Tone(uint8_t ft8_tone)
 {
-	static const uint8_t fsk_freq[8] = {0, 6, 14, 19, 25, 31, 38, 44};
+	static const uint8_t fsk_freq[8] = {0, 6, 13, 19, 25, 31, 38, 44};
 	// uint64_t F_FT8 = (F_Long * 100ULL + (uint64_t)ft8_tone * FT8_TONE_SPACING) / 100ULL;
 	uint64_t F_FT8 = F_Long + fsk_freq[ft8_tone];
 	set_freq(F_FT8);
