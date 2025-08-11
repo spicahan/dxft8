@@ -1122,28 +1122,134 @@ HAL_StatusTypeDef HAL_UART_DMAStop(UART_HandleTypeDef *huart)
 
 void HAL_UART_IRQHandler(UART_HandleTypeDef *huart)
 {
+  uint32_t isrflags   = READ_REG(huart->Instance->ISR);
+  uint32_t cr1its     = READ_REG(huart->Instance->CR1);
+  uint32_t cr3its     = READ_REG(huart->Instance->CR3);
+
+  uint32_t errorflags;
+
+  /* If no error occurs */
+  errorflags = (isrflags & (uint32_t)(USART_ISR_PE | USART_ISR_FE | USART_ISR_ORE | USART_ISR_NE));
+  if (errorflags == 0U)
+  {
+    /* UART in mode Receiver ---------------------------------------------------*/
+    if (((isrflags & USART_ISR_RXNE) != 0U)
+        && ((cr1its & USART_CR1_RXNEIE) != 0U))
+    {
+      /* Check if we have a proper RX transfer active */
+      if ((huart->State == HAL_UART_STATE_BUSY_RX || huart->State == HAL_UART_STATE_BUSY_TX_RX)
+          && huart->RxXferCount > 0)
+      {
+        UART_Receive_IT(huart);
+      }
+      else
+      {
+        /* No proper RX transfer - just discard the data */
+        extern volatile uint32_t unexpectedRxCount;
+        unexpectedRxCount++;
+        volatile uint32_t discard = huart->Instance->RDR;
+        (void)discard;
+      }
+      return;
+    }
+  }
+
   /* UART in mode Transmitter ------------------------------------------------*/
   if((__HAL_UART_GET_IT(huart, UART_IT_TXE) != RESET) && (__HAL_UART_GET_IT_SOURCE(huart, UART_IT_TXE) != RESET))
   {
     UART_Transmit_IT(huart);
+    return;
   }
 
   /* UART in mode Transmitter end --------------------------------------------*/
   if((__HAL_UART_GET_IT(huart, UART_IT_TC) != RESET) && (__HAL_UART_GET_IT_SOURCE(huart, UART_IT_TC) != RESET))
   {
     UART_EndTransmit_IT(huart);
+    return;
   }
 
-  /* UART in mode Receiver ---------------------------------------------------*/
-  if((__HAL_UART_GET_IT(huart, UART_IT_RXNE) != RESET) )
-  { 
-	__HAL_UART_DISABLE_IT(huart, UART_IT_RXNE);
-    UART_Receive_IT(huart);
-    /* Clear RXNE interrupt flag */
-    __HAL_UART_SEND_REQ(huart, UART_RXDATA_FLUSH_REQUEST);
-    __HAL_UART_ENABLE_IT(huart, UART_IT_RXNE);
-  }
+  /* If some errors occur */
+  if ((errorflags != 0U)
+      && (((cr3its & USART_CR3_EIE) != 0U)
+          || ((cr1its & (USART_CR1_RXNEIE | USART_CR1_PEIE)) != 0U)))
+  {
+    /* UART parity error interrupt occurred ----------------------------------*/
+    if (((isrflags & USART_ISR_PE) != 0U) && ((cr1its & USART_CR1_PEIE) != 0U))
+    {
+      __HAL_UART_CLEAR_IT(huart, UART_CLEAR_PEF);
+      huart->ErrorCode |= HAL_UART_ERROR_PE;
+    }
 
+    /* UART frame error interrupt occurred -----------------------------------*/
+    if (((isrflags & USART_ISR_FE) != 0U) && ((cr3its & USART_CR3_EIE) != 0U))
+    {
+      __HAL_UART_CLEAR_IT(huart, UART_CLEAR_FEF);
+      huart->ErrorCode |= HAL_UART_ERROR_FE;
+    }
+
+    /* UART noise error interrupt occurred -----------------------------------*/
+    if (((isrflags & USART_ISR_NE) != 0U) && ((cr3its & USART_CR3_EIE) != 0U))
+    {
+      __HAL_UART_CLEAR_IT(huart, UART_CLEAR_NEF);
+      huart->ErrorCode |= HAL_UART_ERROR_NE;
+    }
+
+    /* UART Over-Run interrupt occurred --------------------------------------*/
+    if (((isrflags & USART_ISR_ORE) != 0U)
+        && (((cr1its & USART_CR1_RXNEIE) != 0U) ||
+            ((cr3its & USART_CR3_EIE) != 0U)))
+    {
+      __HAL_UART_CLEAR_IT(huart, UART_CLEAR_OREF);
+      huart->ErrorCode |= HAL_UART_ERROR_ORE;
+    }
+
+    /* Call UART Error Call back function if need be -----------------------*/
+    if (huart->ErrorCode != HAL_UART_ERROR_NONE)
+    {
+      /* UART in mode Receiver -----------------------------------------------*/
+      if (((isrflags & USART_ISR_RXNE) != 0U)
+          && ((cr1its & USART_CR1_RXNEIE) != 0U))
+      {
+        UART_Receive_IT(huart);
+      }
+      /* Handle RXNE even when error occurred and no RX transfer active -----*/
+      else if ((isrflags & USART_ISR_RXNE) != 0U)
+      {
+        /* Read and discard data to prevent further overrun */
+        extern volatile uint32_t unexpectedRxCount;
+        unexpectedRxCount++;
+        volatile uint32_t discard = huart->Instance->RDR;
+        (void)discard;
+        
+        /* Explicitly clear the RXNE flag */
+        __HAL_UART_SEND_REQ(huart, UART_RXDATA_FLUSH_REQUEST);
+      }
+
+      /* If Error is to be considered as blocking : */
+      if ((huart->ErrorCode & HAL_UART_ERROR_ORE) != 0U)
+      {
+        /* Disable the UART Receive Data register not empty Interrupt */
+        __HAL_UART_DISABLE_IT(huart, UART_IT_RXNE);
+
+        /* Disable the UART Parity Error Interrupt */
+        __HAL_UART_DISABLE_IT(huart, UART_IT_PE);
+
+        /* Disable the UART Error Interrupt: (Frame error, noise error, overrun error) */
+        __HAL_UART_DISABLE_IT(huart, UART_IT_ERR);
+
+        /* Set the UART state ready to be able to start again the process */
+        huart->State = HAL_UART_STATE_READY;
+
+        /* Call user error callback */
+        HAL_UART_ErrorCallback(huart);
+      }
+      else
+      {
+        /* Call user error callback */
+        HAL_UART_ErrorCallback(huart);
+      }
+    }
+  }
 }
 
 
@@ -1397,12 +1503,62 @@ __weak void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
   */
 static HAL_StatusTypeDef UART_Receive_IT(UART_HandleTypeDef *huart)
 {
-      *huart->pRxBuffPtr = (uint8_t)(huart->Instance->RDR);
+  uint16_t* tmp;
+  
+  /* Check that a Rx process is ongoing */
+  if((huart->State == HAL_UART_STATE_BUSY_RX) || (huart->State == HAL_UART_STATE_BUSY_TX_RX))
+  {
+    if(huart->RxXferCount == 0)
+    {
+      /* Disable the UART Receive Data register not empty Interrupt */
+      __HAL_UART_DISABLE_IT(huart, UART_IT_RXNE);
+      
+      /* Disable the UART Parity Error Interrupt */
+      __HAL_UART_DISABLE_IT(huart, UART_IT_PE);
+      
+      /* Disable the UART Error Interrupt: (Frame error, noise error, overrun error) */
+      __HAL_UART_DISABLE_IT(huart, UART_IT_ERR);
+      
+      /* Check if a transmit Process is ongoing or not */
+      if(huart->State == HAL_UART_STATE_BUSY_TX_RX)
+      {
+        huart->State = HAL_UART_STATE_BUSY_TX;
+      }
+      else
+      {
+        huart->State = HAL_UART_STATE_READY;
+      }
+      
       HAL_UART_RxCpltCallback(huart);
-
-
+      
+      return HAL_OK;
+    }
+    else
+    {
+      if ((huart->Init.WordLength == UART_WORDLENGTH_9B) && (huart->Init.Parity == UART_PARITY_NONE))
+      {
+        tmp = (uint16_t*) huart->pRxBuffPtr;
+        *tmp = (uint16_t)(huart->Instance->RDR & (uint16_t)0x01FF);
+        huart->pRxBuffPtr += 2;
+      }
+      else
+      {
+        *huart->pRxBuffPtr = (uint8_t)(huart->Instance->RDR & (uint8_t)0x00FF);
+        huart->pRxBuffPtr++;
+      }
+      
+      huart->RxXferCount--;
+      
+      return HAL_OK;
+    }
+  }
+  else
+  {
+    /* If no Rx process ongoing, just read and discard to clear the flag */
+    volatile uint32_t discard = huart->Instance->RDR;
+    (void)discard;
     return HAL_OK;
-
+  }
 }
 
 /**
@@ -1417,7 +1573,7 @@ static HAL_StatusTypeDef UART_Transmit_IT(UART_HandleTypeDef *huart)
   uint16_t* tmp;
 
   /* Check that a Tx process is ongoing */
-  if(huart->State == HAL_UART_STATE_BUSY_TX)
+  if((huart->State == HAL_UART_STATE_BUSY_TX) || (huart->State == HAL_UART_STATE_BUSY_TX_RX))
   {
     if(huart->TxXferCount == 0)
     {
