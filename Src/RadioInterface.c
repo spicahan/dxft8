@@ -22,8 +22,6 @@ const int ADC_DVC_Off = 90;
 
 #define FT8_TONE_SPACING 625
 
-static uint64_t F_Long;
-
 static void set_freq(uint64_t freq);
 static void transmit();
 static void receive();
@@ -37,7 +35,6 @@ void setup_to_transmit_on_next_DSP_Flag(void)
 {
 	ft8_xmit_counter = 0;
 	xmit_sequence();
-	transmit();
 	ft8_transmit_sequence();
 	xmit_flag = 1;
 }
@@ -56,6 +53,7 @@ void ft8_transmit_sequence(void)
 	Set_ADC_DVC(ADC_DVC_Off);
 	// HAL_Delay(10);
 	set_Xmit_Freq();
+	transmit();
 	HAL_Delay(10);
 }
 
@@ -83,20 +81,23 @@ void tune_Off_sequence(void)
 
 void set_Xmit_Freq(void)
 {
-	F_Long = start_freq * 1000ULL + (uint16_t)NCO_Frequency;
+	uint64_t F_Long = start_freq * 1000ULL;
 	set_freq(F_Long);
 }
 
 void set_FT8_Tone(uint8_t ft8_tone)
 {
-	static const uint8_t fsk_freq[8] = {0, 6, 14, 19, 25, 31, 38, 44};
-	// uint64_t F_FT8 = (F_Long * 100ULL + (uint64_t)ft8_tone * FT8_TONE_SPACING) / 100ULL;
-	uint64_t F_FT8 = F_Long + fsk_freq[ft8_tone];
-	set_freq(F_FT8);
+	static const uint8_t fsk_freq_i[8] = {0, 6, 12, 18, 25, 31, 37, 43};
+	static const uint8_t fsk_freq_f[8] = {0,  25, 50, 75, 0,  25, 50, 75};
+	char cat_cmd[13];
+	snprintf(cat_cmd, sizeof(cat_cmd), "TA%.04u.%.02u;",
+	    (uint16_t)NCO_Frequency + fsk_freq_i[ft8_tone], fsk_freq_f[ft8_tone]);
+	uart_tx(cat_cmd);
 }
 
 void set_Rcvr_Freq(void)
 {
+	uart_tx("MD6;");
 	uint64_t F_Receive = start_freq * 1000ULL;
 	set_freq(F_Receive);
 }
@@ -107,7 +108,8 @@ static void transmit()
 	if (xmit_flag) {
 		return;
 	}
-	uart_tx("MD3;AP1;SWH16;");
+	uart_tx("TX;");
+	set_FT8_Tone(0);
 	xmit_flag = 1;
 }
 
@@ -116,7 +118,9 @@ static void receive()
 	if (!xmit_flag) {
 		return;
 	}
-	uart_tx("SWH16;MD2;");
+	uart_tx("TA0;");
+	HAL_Delay(10);
+	uart_tx("RX;");
 	xmit_flag = 0;
 }
 

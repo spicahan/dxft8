@@ -35,10 +35,10 @@ void uart_init(void)
   UartHandle.Init.HwFlowCtl  = UART_HWCONTROL_NONE;
   UartHandle.Init.Mode       = UART_MODE_TX_RX;
   // For KX2/KX3
-  UartHandle.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXINVERT_INIT |
-                                           UART_ADVFEATURE_TXINVERT_INIT;
-  UartHandle.AdvancedInit.RxPinLevelInvert  = UART_ADVFEATURE_RXINV_ENABLE;
-  UartHandle.AdvancedInit.TxPinLevelInvert  = UART_ADVFEATURE_TXINV_ENABLE;
+  // UartHandle.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXINVERT_INIT |
+  //                                          UART_ADVFEATURE_TXINVERT_INIT;
+  // UartHandle.AdvancedInit.RxPinLevelInvert  = UART_ADVFEATURE_RXINV_ENABLE;
+  // UartHandle.AdvancedInit.TxPinLevelInvert  = UART_ADVFEATURE_TXINV_ENABLE;
   if(HAL_UART_DeInit(&UartHandle) != HAL_OK)
   {
     Error_Handler();
