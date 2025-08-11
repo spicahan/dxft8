@@ -120,32 +120,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
   *         add your own implementation.
   * @retval None
   */
-// Debug counter to track unexpected RX handling
-volatile uint32_t unexpectedRxCount = 0;
-
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *UartHandle)
 {
-    // Debug: Capture all relevant debugging info
-    // Error codes: PE=0x01, NE=0x02, FE=0x04, ORE=0x08, DMA=0x10
-    volatile uint32_t errorCode = UartHandle->ErrorCode;
-    volatile uint32_t uartState = UartHandle->State;
-    volatile uint32_t rxXferCount = UartHandle->RxXferCount;
-    volatile uint32_t isrFlags = UartHandle->Instance->ISR;
-    volatile uint32_t cr1Reg = UartHandle->Instance->CR1;
-    volatile uint32_t cr3Reg = UartHandle->Instance->CR3;
-    volatile uint32_t rdrData = UartHandle->Instance->RDR;
-    volatile uint32_t debugUnexpectedRx = unexpectedRxCount;
-    
-    // Set breakpoint here to examine all variables
-    (void)errorCode;
-    (void)uartState; 
-    (void)rxXferCount;
-    (void)isrFlags;
-    (void)cr1Reg;
-    (void)cr3Reg;
-    (void)rdrData;
-    (void)debugUnexpectedRx;
-    
+    (void)UartHandle;
     Error_Handler();
 }
 

@@ -1145,8 +1145,6 @@ void HAL_UART_IRQHandler(UART_HandleTypeDef *huart)
       else
       {
         /* No proper RX transfer - just discard the data */
-        extern volatile uint32_t unexpectedRxCount;
-        unexpectedRxCount++;
         volatile uint32_t discard = huart->Instance->RDR;
         (void)discard;
       }
@@ -1216,38 +1214,12 @@ void HAL_UART_IRQHandler(UART_HandleTypeDef *huart)
       else if ((isrflags & USART_ISR_RXNE) != 0U)
       {
         /* Read and discard data to prevent further overrun */
-        extern volatile uint32_t unexpectedRxCount;
-        unexpectedRxCount++;
         volatile uint32_t discard = huart->Instance->RDR;
         (void)discard;
-        
-        /* Explicitly clear the RXNE flag */
-        __HAL_UART_SEND_REQ(huart, UART_RXDATA_FLUSH_REQUEST);
       }
 
-      /* If Error is to be considered as blocking : */
-      if ((huart->ErrorCode & HAL_UART_ERROR_ORE) != 0U)
-      {
-        /* Disable the UART Receive Data register not empty Interrupt */
-        __HAL_UART_DISABLE_IT(huart, UART_IT_RXNE);
-
-        /* Disable the UART Parity Error Interrupt */
-        __HAL_UART_DISABLE_IT(huart, UART_IT_PE);
-
-        /* Disable the UART Error Interrupt: (Frame error, noise error, overrun error) */
-        __HAL_UART_DISABLE_IT(huart, UART_IT_ERR);
-
-        /* Set the UART state ready to be able to start again the process */
-        huart->State = HAL_UART_STATE_READY;
-
-        /* Call user error callback */
-        HAL_UART_ErrorCallback(huart);
-      }
-      else
-      {
-        /* Call user error callback */
-        HAL_UART_ErrorCallback(huart);
-      }
+      /* Call user error callback */
+      HAL_UART_ErrorCallback(huart);
     }
   }
 }
