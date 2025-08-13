@@ -24,3 +24,7 @@
 extern q15_t coeff_fir_I_32K[NUM_FIR_COEF];
 
 extern q15_t coeff_fir_Q_32K[NUM_FIR_COEF];
+
+extern q15_t coeff_lpf32k_q15_128[128];
+
+extern q15_t coeff_lpf32k_q15[195];

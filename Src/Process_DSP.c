@@ -23,18 +23,20 @@ uint8_t export_fft_power[ft8_msg_samples * ft8_buffer_size * 4];
 
 q15_t FIR_State_I[NUM_FIR_COEF + (BUFFERSIZE / 4) - 1];
 q15_t FIR_State_Q[NUM_FIR_COEF + (BUFFERSIZE / 4) - 1];
+q15_t FIR_State_I_SPECTRUM[195 + (BUFFERSIZE / 4) - 1];
+q15_t FIR_State_Q_SPECTRUM[195 + (BUFFERSIZE / 4) - 1];
 
 static int offset_step;
-static arm_rfft_instance_q15 fft_inst;
+static arm_cfft_instance_q15 fft_inst;
+extern arm_cfft_instance_q15 arm_cfft_sR_q15_len2048;
 
-static arm_fir_instance_q15 S_FIR_I_32K = {NUM_FIR_COEF, FIR_State_I, coeff_fir_I_32K};
-static arm_fir_instance_q15 S_FIR_Q_32K = {NUM_FIR_COEF, FIR_State_Q, coeff_fir_Q_32K};
+// static arm_fir_instance_q15 S_FIR_I_32K = {NUM_FIR_COEF, FIR_State_I, coeff_fir_I_32K};
+// static arm_fir_instance_q15 S_FIR_Q_32K = {NUM_FIR_COEF, FIR_State_Q, coeff_fir_Q_32K};
+static arm_fir_instance_q15 S_FIR_I_SPECTRUM_32K = {195, FIR_State_I_SPECTRUM, coeff_lpf32k_q15};
+static arm_fir_instance_q15 S_FIR_Q_SPECTRUM_32K = {195, FIR_State_Q_SPECTRUM, coeff_lpf32k_q15};
 
 static q15_t window_dsp_buffer[FFT_SIZE * 2];
-static q15_t *window_dsp_buffer_q = & window_dsp_buffer[FFT_SIZE];
 static q15_t extract_signal[input_gulp_size * 4];
-static q15_t *extract_signal_q = &extract_signal[input_gulp_size * 2];
-// static q15_t dsp_output[FFT_SIZE * 2];
 static q15_t FFT_Scale[FFT_SIZE * 2];
 static q15_t FFT_Magnitude[FFT_SIZE];
 
@@ -45,12 +47,15 @@ static float window[FFT_SIZE];
 
 void Process_FIR_I_32K(void)
 {
-	arm_fir_q15(&S_FIR_I_32K, FIR_I_In, FIR_I_Out, BUFFERSIZE / 4);
+	// arm_fir_q15(&S_FIR_I_32K, FIR_I_In, FIR_I_Out, BUFFERSIZE / 4);
+	arm_fir_q15(&S_FIR_I_SPECTRUM_32K, FIR_I_In, FIR_I_Out, BUFFERSIZE / 4);
 }
 
 void Process_FIR_Q_32K(void)
 {
-	arm_fir_q15(&S_FIR_Q_32K, FIR_Q_In, FIR_Q_Out, BUFFERSIZE / 4);
+	// arm_fir_q15(&S_FIR_Q_32K, FIR_Q_In, FIR_Q_Out, BUFFERSIZE / 4);
+	// arm_fir_q15(&S_FIR_I_32K, FIR_Q_In, FIR_Q_Out, BUFFERSIZE / 4);
+	arm_fir_q15(&S_FIR_Q_SPECTRUM_32K, FIR_Q_In, FIR_Q_Out, BUFFERSIZE / 4);
 }
 
 static float ft_blackman_i(int i, int N)
@@ -68,7 +73,7 @@ static float ft_blackman_i(int i, int N)
 
 void init_DSP(void)
 {
-	arm_rfft_init_q15(&fft_inst, FFT_SIZE, 0, 1);
+	fft_inst = arm_cfft_sR_q15_len2048;
 	for (int i = 0; i < FFT_SIZE; ++i)
 	{
 		window[i] = ft_blackman_i(i, FFT_SIZE);
@@ -80,10 +85,10 @@ void process_FT8_FFT(void)
 {
 	for (int i = 0; i < input_gulp_size; i++)
 	{
-		extract_signal[i] = extract_signal[i + input_gulp_size];
-		extract_signal[i + input_gulp_size] = FT8_Data[i];
-		extract_signal_q[i] = extract_signal_q[i + input_gulp_size];
-		extract_signal_q[i + input_gulp_size] = FT8_Data_q[i];
+		extract_signal[i * 2] = extract_signal[(i + input_gulp_size) * 2];
+		extract_signal[i * 2 + 1] = extract_signal[(i + input_gulp_size) * 2 + 1];
+		extract_signal[(i + input_gulp_size) * 2] = FT8_Data[i];
+		extract_signal[(i + input_gulp_size) * 2 + 1] = FT8_Data_q[i];
 	}
 
 	// if (ft8_flag)
@@ -114,19 +119,17 @@ void extract_power(int offset)
 	// Loop over two possible time offsets (0 and block_size/2)
 	// for (int time_sub = 0; time_sub <= input_gulp_size / 2; time_sub += input_gulp_size / 2)
 	{
-		const int time_sub = 0;
 		for (int i = 0; i < FFT_SIZE; i++)
 		{
-			window_dsp_buffer[i] = (q15_t)((float)extract_signal[i + time_sub] * window[i]);
-			window_dsp_buffer_q[i] = (q15_t)((float)extract_signal_q[i + time_sub] * window[i]);
+			window_dsp_buffer[i * 2] = (q15_t)((float)extract_signal[i * 2] * window[i]);
+			window_dsp_buffer[i * 2 + 1] = (q15_t)((float)extract_signal[i * 2 + 1] * window[i]);
 		}
 
 		// arm_rfft_q15(&fft_inst, window_dsp_buffer, dsp_output);
-        arm_cfft_q15(fft_inst.pCfft, window_dsp_buffer, fft_inst.ifftFlagR, fft_inst.bitReverseFlagR);
+		arm_cfft_q15(&fft_inst, window_dsp_buffer, /*ifft=*/0, /*bitrev=*/1);
 		// arm_shift_q15(dsp_output, 5, FFT_Scale, FFT_SIZE * 2);
 		arm_shift_q15(window_dsp_buffer, 5, FFT_Scale, FFT_SIZE * 2);
-		// arm_cmplx_mag_squared_q15(FFT_Scale, FFT_Magnitude, FFT_SIZE);
-		arm_cmplx_mag_squared_q15(FFT_Scale, FFT_Magnitude, FFT_SIZE * 2);
+		arm_cmplx_mag_squared_q15(FFT_Scale, FFT_Magnitude, FFT_SIZE);
 
 		for (int j = 0; j < FFT_SIZE; j++)
 		{
@@ -137,17 +140,27 @@ void extract_power(int offset)
 		// Loop over two possible frequency bin offsets (for averaging)
 		// for (int freq_sub = 0; freq_sub < 2; ++freq_sub)
 		{
-			const int freq_sub = 0;
+			const int left_px   = ft8_buffer_size / 2; // 200
+			const int bins_per_px = 2;				   // you average two bins
+
 			for (int k = 0; k < ft8_buffer_size; ++k)
 			{
-				int mag_offset = k * 2 + freq_sub;
-				float db1 = mag_db[mag_offset];
-				float db2 = mag_db[mag_offset + 1];
-				float db = (db1 + db2) / 2;
+				int mag_offset;
+				if (k < left_px)
+				{
+					// LSB: last 400 bins → start at N-400 and step by 2
+					mag_offset = FFT_SIZE - left_px * bins_per_px + k * bins_per_px; // N - 400 + 2k
+				}
+				else
+				{
+					// USB: start at DC (0) and step by 2
+					mag_offset = (k - left_px) * bins_per_px; // 0 + 2(k-200)
+				}
 
-				int scaled = (int)(db);
-
-				export_fft_power[offset++] = (uint8_t)(scaled < 0) ? 0 : ((scaled > 63) ? 63 : scaled);
+				float db = 0.5f * (mag_db[mag_offset] + mag_db[mag_offset + 1]);
+				int scaled = (int)db;
+				export_fft_power[offset++] =
+					(uint8_t)(scaled < 0 ? 0 : (scaled > 63 ? 63 : scaled));
 			}
 		}
 	}

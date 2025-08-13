@@ -134,8 +134,9 @@ void I2S2_RX_ProcessBuffer(uint16_t offset)
 
 		if (++decimator == 5) {
 			decimator = 0;
-			FT8_Data[ft8_pos++] = FIR_I_Out[i];
-			FT8_Data_q[ft8_pos++] = FIR_Q_Out[i];
+			FT8_Data[ft8_pos] = FIR_I_Out[i];
+			FT8_Data_q[ft8_pos] = FIR_Q_Out[i];
+			ft8_pos++;
 		}
 
 		int index = i * 2 + offset;

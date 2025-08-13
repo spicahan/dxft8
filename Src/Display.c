@@ -15,7 +15,7 @@
 #define TX_X 240
 
 int FT_8_TouchIndex;
-uint16_t cursor = 192;
+uint16_t cursor = 176; // Center of the spectrum
 int FT8_Touch_Flag;
 
 static uint8_t WF_Bfr[FFT_H * FFT_W];
@@ -250,7 +250,7 @@ void Display_WF(void)
 	// set the new data in the last line unless a marker line is to be drawn
 	for (int x = 0; x < FFT_W; x++)
 	{
-		WF_Bfr[byte_count_to_last_line + x] = (ft8_marker) ? marker_line_colour_index : FFT_Buffer[x + ft8_min_bin];
+		WF_Bfr[byte_count_to_last_line + x] = (ft8_marker) ? marker_line_colour_index : FFT_Buffer[x + 24];
 	}
 
 	// Draw the waterfall from the bottom to the top
