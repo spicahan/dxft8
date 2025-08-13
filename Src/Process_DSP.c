@@ -30,15 +30,17 @@ static arm_rfft_instance_q15 fft_inst;
 static arm_fir_instance_q15 S_FIR_I_32K = {NUM_FIR_COEF, FIR_State_I, coeff_fir_I_32K};
 static arm_fir_instance_q15 S_FIR_Q_32K = {NUM_FIR_COEF, FIR_State_Q, coeff_fir_Q_32K};
 
-static q15_t window_dsp_buffer[FFT_SIZE];
-static q15_t extract_signal[input_gulp_size * 2]; // was float
-static q15_t dsp_output[FFT_SIZE * 2];
+static q15_t window_dsp_buffer[FFT_SIZE * 2];
+static q15_t *window_dsp_buffer_q = & window_dsp_buffer[FFT_SIZE];
+static q15_t extract_signal[input_gulp_size * 4];
+static q15_t *extract_signal_q = &extract_signal[input_gulp_size * 2];
+// static q15_t dsp_output[FFT_SIZE * 2];
 static q15_t FFT_Scale[FFT_SIZE * 2];
 static q15_t FFT_Magnitude[FFT_SIZE];
 
-static int32_t FFT_Mag_10[FFT_SIZE / 2];
+static int32_t FFT_Mag_10[FFT_SIZE];
 
-static float mag_db[FFT_SIZE / 2 + 1];
+static float mag_db[FFT_SIZE + 1];
 static float window[FFT_SIZE];
 
 void Process_FIR_I_32K(void)
@@ -80,6 +82,8 @@ void process_FT8_FFT(void)
 	{
 		extract_signal[i] = extract_signal[i + input_gulp_size];
 		extract_signal[i + input_gulp_size] = FT8_Data[i];
+		extract_signal_q[i] = extract_signal_q[i + input_gulp_size];
+		extract_signal_q[i + input_gulp_size] = FT8_Data_q[i];
 	}
 
 	// if (ft8_flag)
@@ -112,13 +116,19 @@ void extract_power(int offset)
 	{
 		const int time_sub = 0;
 		for (int i = 0; i < FFT_SIZE; i++)
+		{
 			window_dsp_buffer[i] = (q15_t)((float)extract_signal[i + time_sub] * window[i]);
+			window_dsp_buffer_q[i] = (q15_t)((float)extract_signal_q[i + time_sub] * window[i]);
+		}
 
-		arm_rfft_q15(&fft_inst, window_dsp_buffer, dsp_output);
-		arm_shift_q15(dsp_output, 5, FFT_Scale, FFT_SIZE * 2);
-		arm_cmplx_mag_squared_q15(FFT_Scale, FFT_Magnitude, FFT_SIZE);
+		// arm_rfft_q15(&fft_inst, window_dsp_buffer, dsp_output);
+        arm_cfft_q15(fft_inst.pCfft, window_dsp_buffer, fft_inst.ifftFlagR, fft_inst.bitReverseFlagR);
+		// arm_shift_q15(dsp_output, 5, FFT_Scale, FFT_SIZE * 2);
+		arm_shift_q15(window_dsp_buffer, 5, FFT_Scale, FFT_SIZE * 2);
+		// arm_cmplx_mag_squared_q15(FFT_Scale, FFT_Magnitude, FFT_SIZE);
+		arm_cmplx_mag_squared_q15(FFT_Scale, FFT_Magnitude, FFT_SIZE * 2);
 
-		for (int j = 0; j < FFT_SIZE / 2; j++)
+		for (int j = 0; j < FFT_SIZE; j++)
 		{
 			FFT_Mag_10[j] = 10 * (int32_t)FFT_Magnitude[j];
 			mag_db[j] = 5.0 * log((float)FFT_Mag_10[j] + 0.1);

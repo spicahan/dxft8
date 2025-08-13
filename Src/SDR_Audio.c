@@ -21,7 +21,8 @@ q15_t FIR_Q_In[BUFFERSIZE / 4];
 q15_t FIR_I_Out[BUFFERSIZE / 4];
 q15_t FIR_Q_Out[BUFFERSIZE / 4];
 
-q15_t FT8_Data[2048 / 2];
+q15_t FT8_Data[2048];
+q15_t *FT8_Data_q = &FT8_Data[1024];
 
 uint16_t buff_offset;
 
@@ -133,7 +134,8 @@ void I2S2_RX_ProcessBuffer(uint16_t offset)
 
 		if (++decimator == 5) {
 			decimator = 0;
-			FT8_Data[ft8_pos++] = USB_Out[i];
+			FT8_Data[ft8_pos++] = FIR_I_Out[i];
+			FT8_Data_q[ft8_pos++] = FIR_Q_Out[i];
 		}
 
 		int index = i * 2 + offset;
