@@ -31,7 +31,7 @@ static arm_fir_instance_q15 S_FIR_I_32K = {NUM_FIR_COEF, FIR_State_I, coeff_fir_
 static arm_fir_instance_q15 S_FIR_Q_32K = {NUM_FIR_COEF, FIR_State_Q, coeff_fir_Q_32K};
 
 static q15_t window_dsp_buffer[FFT_SIZE];
-static q15_t extract_signal[input_gulp_size * 3]; // was float
+static q15_t extract_signal[input_gulp_size * 2]; // was float
 static q15_t dsp_output[FFT_SIZE * 2];
 static q15_t FFT_Scale[FFT_SIZE * 2];
 static q15_t FFT_Magnitude[FFT_SIZE];
@@ -79,11 +79,10 @@ void process_FT8_FFT(void)
 	for (int i = 0; i < input_gulp_size; i++)
 	{
 		extract_signal[i] = extract_signal[i + input_gulp_size];
-		extract_signal[i + input_gulp_size] = extract_signal[i + 2 * input_gulp_size];
-		extract_signal[i + 2 * input_gulp_size] = FT8_Data[i];
+		extract_signal[i + input_gulp_size] = FT8_Data[i];
 	}
 
-	if (ft8_flag)
+	// if (ft8_flag)
 	{
 		int offset = offset_step * FT_8_counter;
 		extract_power(offset);
@@ -95,12 +94,12 @@ void process_FT8_FFT(void)
 
 		Display_WF();
 
-		++FT_8_counter;
+		// ++FT_8_counter;
 
-		if (FT_8_counter == ft8_msg_samples) {
-			decode_flag = 1;
-			ft8_flag = 0;
-		}
+		// if (FT_8_counter == ft8_msg_samples) {
+		// 	decode_flag = 1;
+		// 	ft8_flag = 0;
+		// }
 
 	}
 }
@@ -109,8 +108,9 @@ void process_FT8_FFT(void)
 void extract_power(int offset)
 {
 	// Loop over two possible time offsets (0 and block_size/2)
-	for (int time_sub = 0; time_sub <= input_gulp_size / 2; time_sub += input_gulp_size / 2)
+	// for (int time_sub = 0; time_sub <= input_gulp_size / 2; time_sub += input_gulp_size / 2)
 	{
+		const int time_sub = 0;
 		for (int i = 0; i < FFT_SIZE; i++)
 			window_dsp_buffer[i] = (q15_t)((float)extract_signal[i + time_sub] * window[i]);
 
@@ -125,8 +125,9 @@ void extract_power(int offset)
 		}
 
 		// Loop over two possible frequency bin offsets (for averaging)
-		for (int freq_sub = 0; freq_sub < 2; ++freq_sub)
+		// for (int freq_sub = 0; freq_sub < 2; ++freq_sub)
 		{
+			const int freq_sub = 0;
 			for (int k = 0; k < ft8_buffer_size; ++k)
 			{
 				int mag_offset = k * 2 + freq_sub;

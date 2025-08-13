@@ -138,7 +138,7 @@ void I2S2_RX_ProcessBuffer(uint16_t offset)
 
 		int index = i * 2 + offset;
 		out_buff[index] = USB_Out[i];
-		out_buff[index + 1] = LSB_Out[i];
+		out_buff[index + 1] = USB_Out[i];
 	}
 
 	if (++frame_counter == 4)
