@@ -9,5 +9,6 @@
 #define SINE_TABLE_H_
 
 extern const int Sine_table[];
+extern const int *Cosine_table;
 
 #endif /* SINE_TABLE_H_ */

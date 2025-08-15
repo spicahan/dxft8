@@ -115,10 +115,19 @@ void I2S2_RX_ProcessBuffer(uint16_t offset)
 	for (int i = 0; i < BUFFERSIZE / 4; i++)
 	{
 		NCO_phz += NCOphzinc;
-		float temp = (q15_t)Sine_table[(NCO_phz >> 4) & 0xFFF] * RMSConstant;
 		int index = i * 2 + offset;
-		FIR_I_In[i] = (q15_t)(temp * in_buff[index]);
-		FIR_Q_In[i] = (q15_t)(temp * in_buff[index + 1]);
+		// float temp = (q15_t)Sine_table[(NCO_phz >> 4) & 0xFFF] * RMSConstant;
+		// FIR_I_In[i] = (q15_t)(temp * in_buff[index]);
+		// FIR_Q_In[i] = (q15_t)(temp * in_buff[index + 1]);
+		float c = (q15_t)Cosine_table[(NCO_phz >> 4) & 0xFFF] * RMSConstant;
+		float s = (q15_t)Sine_table[(NCO_phz >> 4) & 0xFFF] * RMSConstant;
+
+		float I = in_buff[index];
+		float Q = in_buff[index + 1];
+
+		// Complex rotate by IF
+		FIR_I_In[i] = (q15_t)(I * s - Q * c);
+		FIR_Q_In[i] = (q15_t)(I * c + Q * s);
 	}
 
 	Process_FIR_I_32K();

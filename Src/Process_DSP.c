@@ -125,9 +125,7 @@ void extract_power(int offset)
 			window_dsp_buffer[i * 2 + 1] = (q15_t)((float)extract_signal[i * 2 + 1] * window[i]);
 		}
 
-		// arm_rfft_q15(&fft_inst, window_dsp_buffer, dsp_output);
 		arm_cfft_q15(&fft_inst, window_dsp_buffer, /*ifft=*/0, /*bitrev=*/1);
-		// arm_shift_q15(dsp_output, 5, FFT_Scale, FFT_SIZE * 2);
 		arm_shift_q15(window_dsp_buffer, 5, FFT_Scale, FFT_SIZE * 2);
 		arm_cmplx_mag_squared_q15(FFT_Scale, FFT_Magnitude, FFT_SIZE);
 
