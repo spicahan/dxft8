@@ -798,22 +798,24 @@ void executeButton(uint16_t index)
 		break;
 
 	case FreqDown:
-		if (cursor > 0)
-		{
-			cursor--;
-			NCO_Frequency = (double)(cursor + ft8_min_bin) * FFT_Resolution;
-		}
-		show_variable(400, 25, (int)NCO_Frequency);
+		// if (cursor > 0)
+		// {
+		// 	cursor--;
+		// 	NCO_Frequency = (double)(cursor + ft8_min_bin) * FFT_Resolution;
+		// }
+		// show_variable(400, 25, (int)NCO_Frequency);
+		set_CW_Rcvr_Freq(-100000); // Lower by 1kHz
 		break;
 
 	case FreqUp:
-		if (cursor < (ft8_buffer_size - ft8_min_bin - 8))
-		{
-			// limits highest NCO frequency to (3875 - 50)hz
-			cursor++;
-			NCO_Frequency = (double)(cursor + ft8_min_bin) * FFT_Resolution;
-		}
-		show_variable(400, 25, (int)NCO_Frequency);
+		// if (cursor < (ft8_buffer_size - ft8_min_bin - 8))
+		// {
+		// 	// limits highest NCO frequency to (3875 - 50)hz
+		// 	cursor++;
+		// 	NCO_Frequency = (double)(cursor + ft8_min_bin) * FFT_Resolution;
+		// }
+		// show_variable(400, 25, (int)NCO_Frequency);
+		set_CW_Rcvr_Freq(100000); // Higher by 1kHz
 		break;
 
 	case TxCalibrate:
