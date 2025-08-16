@@ -33,11 +33,12 @@ int xmit_flag, ft8_xmit_counter, ft8_xmit_delay;
 #define PI2 6.2831853071795864765
 #define KCONV 10430.37835 // 		4096*16/PI2
 
-static const double LO_Freq = 10000;
+static const float LO_Freq = 10000;
 static const int Sample_Frequency = 32000;
+static const float CW_BFO_Freq = 600;
 
 static q15_t USB_Out[BUFFERSIZE / 4];
-static q15_t LSB_Out[BUFFERSIZE / 4];
+// static q15_t LSB_Out[BUFFERSIZE / 4];
 static q15_t in_buff[BUFFERSIZE];
 static q15_t out_buff[BUFFERSIZE];
 
@@ -105,12 +106,14 @@ void BSP_AUDIO_OUT_HalfTransfer_CallBack(void)
 
 static const float RMSConstant = 1.0 / 65485.0;
 static const long NCOphzinc = (long)(KCONV * (PI2 * LO_Freq / Sample_Frequency));
+static const long CW_NCOphzinc = (long)(KCONV * (PI2 * CW_BFO_Freq / Sample_Frequency));
 
 int frame_counter = 0;
 
 void I2S2_RX_ProcessBuffer(uint16_t offset)
 {
 	static long NCO_phz = 0;
+	static long CW_NCO_phz = 0;
 
 	for (int i = 0; i < BUFFERSIZE / 4; i++)
 	{
@@ -133,13 +136,24 @@ void I2S2_RX_ProcessBuffer(uint16_t offset)
 	Process_FIR_I_32K();
 	Process_FIR_Q_32K();
 
-	// Decimation
+	// Decimation and CW beat tone
 	uint8_t  decimator = 0;
 	uint16_t ft8_pos = frame_counter * 256;
 	for (int i = 0; i < BUFFERSIZE / 4; i++)
 	{
-		USB_Out[i] = FIR_I_Out[i] - FIR_Q_Out[i];
-		LSB_Out[i] = FIR_I_Out[i] + FIR_Q_Out[i];
+		// CW
+		CW_NCO_phz += CW_NCOphzinc;
+		float c = (q15_t)Cosine_table[(CW_NCO_phz >> 4) & 0xFFF] * RMSConstant;
+		float s = (q15_t)Sine_table[(CW_NCO_phz >> 4) & 0xFFF] * RMSConstant;
+
+		float I = FIR_I_Out[i];
+		float Q = FIR_Q_Out[i];
+		
+		// TODO add a narrow CW BPF
+
+		// Complex rotate by 600Hz
+		USB_Out[i] = (q15_t)(I * c - Q * s);
+		// LSB_Out[i] = (q15_t)(I * s + Q * c);
 
 		if (++decimator == 5) {
 			decimator = 0;
