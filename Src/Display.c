@@ -9,6 +9,8 @@
 #include "decode_ft8.h"
 #include "WF_Table.h"
 
+extern void set_CW_Rcvr_Freq(int32_t);
+
 #define FFT_X 0
 #define FFT_Y 1
 #define FFT_W (ft8_buffer_size - ft8_min_bin)
@@ -203,12 +205,14 @@ void Process_Touch(void)
 			// In the FFT area?
 			if (FFT_Touch())
 			{
-				cursor = (valx - FFT_X);
-				if (cursor > FFT_W - 8)
-					cursor = FFT_W - 8;
+				int f_cursor = (valx - FFT_X);
+				if (f_cursor > FFT_W - 8)
+					f_cursor = FFT_W - 8;
 
-				NCO_Frequency = (double)(cursor + ft8_min_bin) * FFT_Resolution;
-				show_variable(400, 25, (int)NCO_Frequency);
+				// NCO_Frequency = (double)(cursor + ft8_min_bin) * FFT_Resolution;
+				// show_variable(400, 25, (int)NCO_Frequency);
+				int32_t shift = (f_cursor - 176) * 625;
+				set_CW_Rcvr_Freq(shift);
 			}
 			// in the backlight area?
 			else if (LCD_Backlight_Touch())

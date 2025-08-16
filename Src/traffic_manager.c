@@ -90,3 +90,13 @@ void set_Rcvr_Freq(void)
 	uint64_t F_Receive = ((start_freq * 1000ULL - 10000ULL) * 100ULL * 4ULL);
 	set_freq(F_Receive, SI5351_CLK1);
 }
+
+void set_CW_Rcvr_Freq(int32_t shift)
+{
+	static uint64_t F_Receive = 0;
+	if (F_Receive == 0) {
+	    F_Receive = (start_freq * 1000ULL - 10000ULL) * 100ULL;
+	}
+	F_Receive += shift;
+	set_freq(F_Receive * 4ULL, SI5351_CLK1);
+}
