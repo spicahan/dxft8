@@ -37,6 +37,8 @@ void Display_WF(void);
 
 void Set_Cursor_Frequency(void);
 
+void show_VFO(uint32_t);
+
 uint16_t testButton(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 
 #endif /* DISPLAY_H_ */

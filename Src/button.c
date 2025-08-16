@@ -804,7 +804,8 @@ void executeButton(uint16_t index)
 		// 	NCO_Frequency = (double)(cursor + ft8_min_bin) * FFT_Resolution;
 		// }
 		// show_variable(400, 25, (int)NCO_Frequency);
-		set_CW_Rcvr_Freq(-100000); // Lower by 1kHz
+		uint32_t vfo_f = set_CW_Rcvr_Freq(-100000); // Lower by 1kHz
+		show_VFO(vfo_f);
 		break;
 
 	case FreqUp:
@@ -815,7 +816,8 @@ void executeButton(uint16_t index)
 		// 	NCO_Frequency = (double)(cursor + ft8_min_bin) * FFT_Resolution;
 		// }
 		// show_variable(400, 25, (int)NCO_Frequency);
-		set_CW_Rcvr_Freq(100000); // Higher by 1kHz
+		vfo_f = set_CW_Rcvr_Freq(100000); // Higher by 1kHz
+		show_VFO(vfo_f);
 		break;
 
 	case TxCalibrate:

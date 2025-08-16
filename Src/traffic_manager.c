@@ -91,7 +91,7 @@ void set_Rcvr_Freq(void)
 	set_freq(F_Receive, SI5351_CLK1);
 }
 
-void set_CW_Rcvr_Freq(int32_t shift)
+uint32_t set_CW_Rcvr_Freq(int32_t shift)
 {
 	static uint64_t F_Receive = 0;
 	if (F_Receive == 0) {
@@ -99,4 +99,7 @@ void set_CW_Rcvr_Freq(int32_t shift)
 	}
 	F_Receive += shift;
 	set_freq(F_Receive * 4ULL, SI5351_CLK1);
+	// For updating display
+	uint32_t VFO = F_Receive / 100 + 10000ULL;
+	return VFO;
 }

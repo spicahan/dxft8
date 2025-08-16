@@ -9,7 +9,7 @@
 #include "decode_ft8.h"
 #include "WF_Table.h"
 
-extern void set_CW_Rcvr_Freq(int32_t);
+extern uint32_t set_CW_Rcvr_Freq(int32_t);
 
 #define FFT_X 0
 #define FFT_Y 1
@@ -42,6 +42,15 @@ void show_variable(uint16_t x, uint16_t y, int variable)
 	BSP_LCD_SetFont(&Font16);
 	BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
 	BSP_LCD_DisplayStringAt(x, y, (const uint8_t *)string, LEFT_MODE);
+}
+
+void show_VFO(uint32_t freq)
+{
+	char string[11];
+	sprintf(string, "%9lu", freq);
+	BSP_LCD_SetFont(&Font16);
+	BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
+	BSP_LCD_DisplayStringAt(380, 0, (const uint8_t *)string, LEFT_MODE);
 }
 
 void show_short(uint16_t x, uint16_t y, uint8_t variable)
@@ -212,7 +221,8 @@ void Process_Touch(void)
 				// NCO_Frequency = (double)(cursor + ft8_min_bin) * FFT_Resolution;
 				// show_variable(400, 25, (int)NCO_Frequency);
 				int32_t shift = (f_cursor - 176) * 625;
-				set_CW_Rcvr_Freq(shift);
+				uint32_t vfo_f = set_CW_Rcvr_Freq(shift);
+				show_VFO(vfo_f);
 			}
 			// in the backlight area?
 			else if (LCD_Backlight_Touch())

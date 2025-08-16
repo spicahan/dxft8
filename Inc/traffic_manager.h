@@ -22,6 +22,6 @@ void ft8_receive_sequence(void);
 void ft8_transmit_sequence(void);
 void set_FT8_Tone(uint8_t ft8_tone);
 void set_Rcvr_Freq(void);
-void set_CW_Rcvr_Freq(int32_t);
+uint32_t set_CW_Rcvr_Freq(int32_t);
 
 #endif /* TRAFFIC_MANAGER_H_ */
