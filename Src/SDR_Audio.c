@@ -33,7 +33,7 @@ int xmit_flag, ft8_xmit_counter, ft8_xmit_delay;
 #define PI2 6.2831853071795864765
 #define KCONV 10430.37835 // 		4096*16/PI2
 
-static const float LO_Freq = -10000;
+static const float LO_Freq = 10000;
 static const int Sample_Frequency = 32000;
 static const float CW_BFO_Freq = 600;
 
@@ -123,20 +123,18 @@ void I2S2_RX_ProcessBuffer(uint16_t offset)
 		// FIR_I_In[i] = (q15_t)(temp * in_buff[index]);
 		// FIR_Q_In[i] = (q15_t)(temp * in_buff[index + 1]);
 		float c = (q15_t)Cosine_table[(NCO_phz >> 4) & 0xFFF] * RMSConstant;
-		float s = (q15_t)Sine_table[(NCO_phz >> 4) & 0xFFF] * RMSConstant;
+		// float s = (q15_t)Sine_table[(NCO_phz >> 4) & 0xFFF] * RMSConstant;
 
 		float I = in_buff[index];
 		float Q = in_buff[index + 1];
 
-		// Complex rotate by IF
-		FIR_I_In[i] = (q15_t)(I * c - Q * s);
-		FIR_Q_In[i] = (q15_t)(I * s + Q * c);
-		// FIR_I_In[i] = (q15_t)(I * c);
-		// FIR_Q_In[i] = (q15_t)(-Q * s);
+		// Down convert by LO_Freq
+		FIR_I_In[i] = (q15_t)(I * c);
+		FIR_Q_In[i] = (q15_t)(Q * c);
 	}
 
-	// Process_FIR_I_32K();
-	// Process_FIR_Q_32K();
+	Process_FIR_I_32K();
+	Process_FIR_Q_32K();
 
 	// Decimation and CW beat tone
 	uint8_t  decimator = 0;
@@ -148,19 +146,19 @@ void I2S2_RX_ProcessBuffer(uint16_t offset)
 		float c = (q15_t)Cosine_table[(CW_NCO_phz >> 4) & 0xFFF] * RMSConstant;
 		float s = (q15_t)Sine_table[(CW_NCO_phz >> 4) & 0xFFF] * RMSConstant;
 
-		float I = FIR_I_In[i];
-		float Q = FIR_Q_In[i];
+		float I = FIR_I_Out[i];
+		float Q = FIR_Q_Out[i];
 		
 		// TODO add a narrow CW BPF
 
-		// Complex rotate by 600Hz
+		// Up convert by CW_BFO_Freq
 		USB_Out[i] = (q15_t)(I * c - Q * s);
 		// LSB_Out[i] = (q15_t)(I * s + Q * c);
 
 		if (++decimator == 5) {
 			decimator = 0;
-			FT8_Data[ft8_pos] = FIR_I_In[i];
-			FT8_Data_q[ft8_pos] = FIR_Q_In[i];
+			FT8_Data[ft8_pos] = FIR_I_Out[i];
+			FT8_Data_q[ft8_pos] = FIR_Q_Out[i];
 			ft8_pos++;
 		}
 
