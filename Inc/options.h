@@ -8,6 +8,7 @@
 #ifndef OPTIONS_H_
 #define OPTIONS_H_
 #include <stdint.h>
+#include "fatfs.h"
 
 typedef struct
 {

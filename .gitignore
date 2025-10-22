@@ -11,4 +11,7 @@ Katy.*
 build
 *.o
 .DS_Store
+*.template
+*.bak
+.claude
 

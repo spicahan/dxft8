@@ -6,7 +6,6 @@
 #include "button.h"
 #include "DS3231.h"
 
-#include "stm32fxxx_hal.h"
 #include "stdio.h"
 
 #include "ff.h"		/* Declarations of FatFs API */
@@ -26,7 +25,6 @@
 /* Fatfs structure */
 FATFS SDFatFs;	/* File system object for SD card logical drive */
 FIL MyFile;		/* File object */
-char SDPath[4]; /* SD card logical drive path */
 
 // Order must match OptionNumber in options.h
 OptionStruct s_optionsData[] = {

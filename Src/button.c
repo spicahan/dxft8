@@ -13,7 +13,6 @@
 #include "Codec_Gains.h"
 #include "decode_ft8.h"
 #include "main.h"
-#include "stm32fxxx_hal.h"
 #include "Process_DSP.h"
 #include "log_file.h"
 #include "gen_ft8.h"

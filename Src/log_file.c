@@ -17,7 +17,6 @@
 #include "stm32746g_discovery_lcd.h"
 #include "button.h"
 /* Include core modules */
-#include "stm32fxxx_hal.h"
 
 #include <stdio.h>
 

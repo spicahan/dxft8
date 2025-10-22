@@ -8,6 +8,7 @@
 #include "stdio.h"
 #include "decode_ft8.h"
 #include "WF_Table.h"
+#include <stdbool.h>
 
 #define FFT_X 0
 #define FFT_Y 1

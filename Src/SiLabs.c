@@ -1188,8 +1188,8 @@ uint8_t si5351_write(uint8_t addr, uint8_t data) {
 	uint8_t buffer[2];
 	buffer[0] = data;
 
-	//EXT_I2C_Write(SI5351_BUS_BASE_ADDR, addr, data);
-	EXT_I2C_Write_N(SI5351_BUS_BASE_ADDR, addr, buffer[0], 1);
+	EXT_I2C_Write(SI5351_BUS_BASE_ADDR, addr, data);
+	// EXT_I2C_Write_N(SI5351_BUS_BASE_ADDR, addr, buffer[0], 1);
 
 	return 0;
 }

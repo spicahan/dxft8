@@ -8,6 +8,10 @@
 #ifndef DS3231_H_
 #define DS3231_H_
 
+/* Compatible with older BSP APIs*/
+#define EXT_I2C_Read CAMERA_IO_Read
+#define EXT_I2C_Write CAMERA_IO_Write
+
 #include <stdint.h>
 
 typedef struct

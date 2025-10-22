@@ -66,7 +66,7 @@ void start_duplex(void)
 	// note, somehow there is a sneak path for setting the codec frequency see wmcodec for reference
 
 	clear_Output_Buffers();
-	BSP_AUDIO_IN_OUT_Init(INPUT_DEVICE_INPUT_LINE_1, OUTPUT_DEVICE_BOTH, 70, Sample_Frequency);
+	BSP_AUDIO_IN_OUT_Init(INPUT_DEVICE_INPUT_LINE_1, OUTPUT_DEVICE_BOTH, Sample_Frequency, 16, 2);
 	BSP_AUDIO_IN_Record((uint16_t *)&in_buff, BUFFERSIZE);
 	BSP_AUDIO_OUT_Play((uint16_t *)&out_buff, 2 * BUFFERSIZE);
 	NoOp;
