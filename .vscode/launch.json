@@ -8,7 +8,8 @@
             "name": "Remote GDB (st-util)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/Katy.elf",
+            // "program": "${workspaceFolder}/build/Katy.elf",
+            "program": "/Users/spica/DX-FT8-MULTIBAND-TABLET-TRANSCEIVER-Source/Debug/Katy.elf",
             "cwd": "${workspaceFolder}",
             /* GDB */
             "MIMode": "gdb",
