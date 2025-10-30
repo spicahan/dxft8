@@ -27,10 +27,18 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f7xx_hal.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdint.h>
+
+#ifdef HOST_HAL_MOCK
+#include "host_mocks.h"
+#else
+#include "stm32f7xx_hal.h"
+#endif
 
 /* USER CODE END Includes */
 
@@ -53,6 +61,25 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
+void _debug(const char *txt);
+void tx_display_update();
+
+// Original APIs for EXT_I2C_*
+void CAMERA_IO_Init(void);
+uint8_t CAMERA_IO_Read(uint8_t Addr, uint8_t Reg);
+void CAMERA_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value);
+
+extern uint32_t start_time, ft8_time;
+extern int QSO_xmit;
+extern int slot_state;
+extern int target_slot;
+extern int target_freq;
+extern int decode_flag;
+extern int was_txing;
+extern bool clr_pressed;
+extern bool tx_pressed;
+extern bool free_text;
+extern const char* test_data_file;
 
 /* USER CODE END EFP */
 
@@ -383,7 +410,7 @@ void Error_Handler(void);
 #define ARDUINO_MOSI_PWM_D11_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
-
+#define MAX_QUEUE_SIZE 9
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

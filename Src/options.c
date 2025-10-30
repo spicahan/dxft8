@@ -11,7 +11,6 @@
 #include "ff.h"		/* Declarations of FatFs API */
 #include "diskio.h" /* Declarations of device I/O functions */
 
-#include "stm32746g_discovery_sd.h"
 #include "stm32746g_discovery.h"
 
 #include "ff_gen_drv.h"
