@@ -1,0 +1,35 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start st-util",
+      "command": "st-util",
+      "args":   ["--listen_port", "4242", "--multi"],
+      "isBackground": true,
+
+      /* -------  problemMatcher ------------- */
+      "problemMatcher":
+      {
+          "owner": "st-util",               // any unique id
+        "pattern":
+            {
+                "regexp": "ERROR in (.*) (.*):(.*)",
+                "file": 1,
+                "line": 2,
+                "message": 3,
+            },
+        "background": {
+            "activeOnStart": true,
+            /* when this line appears st-util is ready and VS Code may launch GDB */
+            "beginsPattern": "st-util 1",
+            "endsPattern": "Listening at",
+        }
+      }
+    },
+    {
+      "label": "Stop st-util",
+      "command": "killall",
+      "args":   ["st-util"],
+    }
+  ]
+}

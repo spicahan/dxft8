@@ -1,0 +1,43 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Remote GDB (st-util)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Debug/${workspaceFolderBasename}.elf",
+            "cwd": "${workspaceFolder}",
+            /* GDB */
+            "MIMode": "gdb",
+            "miDebuggerPath": "/Applications/ArmGNUToolchain/14.2.rel1/arm-none-eabi/bin/arm-none-eabi-gdb",
+            /* Remote server */
+            "miDebuggerServerAddress": "localhost:4242",
+            "useExtendedRemote": true,
+            // "logging": { "engineLogging": true },
+            /* Start/stop server */
+            "preLaunchTask": "Start st-util",
+            "postDebugTask": "Stop st-util",
+            /* Optional initial commands */
+            "setupCommands": [
+            ]
+        },
+        {
+            "name": "Local Host Mock",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/Tests/host_test",
+            "args": ["test_data.json"],
+            "cwd": "${workspaceFolder}/Tests",
+            /* LLDB */
+            // "MIMode": "lldb",
+            "miDebuggerPath": "/Users/spica/.vscode/extensions/ms-vscode.cpptools-1.26.3-darwin-arm64/debugAdapters/lldb-mi/bin/lldb-mi",
+            /* Optional initial commands */
+            "setupCommands": [
+                {"text": "platform settings -w ${workspaceFolder}/Tests"}
+            ]
+        }
+    ]
+}
