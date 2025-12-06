@@ -14,6 +14,7 @@
 #include "RadioInterface.h"
 #include "Process_DSP.h"
 #include "Codec_Gains.h"
+#include "Uart.h"
 #include "main.h"
 
 const int ADC_DVC_Gain = 180;
@@ -48,7 +49,7 @@ void terminate_QSO(void)
 void ft8_transmit_sequence(void)
 {
 	Set_ADC_DVC(ADC_DVC_Off);
-	HAL_Delay(10);
+	// HAL_Delay(10);
 	set_Xmit_Freq();
 	HAL_Delay(10);
 }
@@ -56,7 +57,8 @@ void ft8_transmit_sequence(void)
 void ft8_receive_sequence(void)
 {
 	receive();
-	HAL_Delay(10);
+	// HAL_Delay(10);
+	set_Rcvr_Freq();
 	Set_ADC_DVC(ADC_DVC_Gain);
 }
 
@@ -76,34 +78,46 @@ void tune_Off_sequence(void)
 
 void set_Xmit_Freq(void)
 {
-	F_Long = ((start_freq * 1000ULL + (uint16_t)NCO_Frequency) * 100ULL);
+	F_Long = start_freq * 1000ULL + (uint16_t)NCO_Frequency;
 	set_freq(F_Long);
 }
 
 void set_FT8_Tone(uint8_t ft8_tone)
 {
-	uint64_t F_FT8 = F_Long + (uint64_t)ft8_tone * FT8_TONE_SPACING;
+	static const uint8_t fsk_freq[8] = {0, 6, 13, 19, 25, 31, 38, 44};
+	// uint64_t F_FT8 = (F_Long * 100ULL + (uint64_t)ft8_tone * FT8_TONE_SPACING) / 100ULL;
+	uint64_t F_FT8 = F_Long + fsk_freq[ft8_tone];
 	set_freq(F_FT8);
 }
 
 void set_Rcvr_Freq(void)
 {
-	uint64_t F_Receive = ((start_freq * 1000ULL - 10000ULL) * 100ULL * 4ULL);
+	uint64_t F_Receive = start_freq * 1000ULL;
 	set_freq(F_Receive);
 }
 
 // Radio implementation
 static void transmit()
 {
-
+	if (xmit_flag) {
+		return;
+	}
+	uart_tx("MD3;AP1;SWH16;");
+	xmit_flag = 1;
 }
 
 static void receive()
 {
-
+	if (!xmit_flag) {
+		return;
+	}
+	uart_tx("SWH16;MD2;");
+	xmit_flag = 0;
 }
 
 static void set_freq(uint64_t freq)
 {
-	(void)freq;
+	char cat_cmd[15];
+	snprintf(cat_cmd, sizeof(cat_cmd), "FA%.011lu;", (uint32_t)freq);
+	uart_tx(cat_cmd);
 }
