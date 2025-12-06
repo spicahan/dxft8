@@ -32,7 +32,7 @@ int xmit_flag, ft8_xmit_counter, ft8_xmit_delay;
 #define PI2 6.2831853071795864765
 #define KCONV 10430.37835 // 		4096*16/PI2
 
-static const double LO_Freq = 10000;
+// static const double LO_Freq = 10000;
 static const int Sample_Frequency = 32000;
 
 static q15_t USB_Out[BUFFERSIZE / 4];
@@ -121,17 +121,6 @@ void clear_Output_Buffers(void)
 	memset(out_buff, 0, BUFFERSIZE * sizeof(q15_t));
 }
 
-void start_codec(void)
-{
-	uint32_t rc = wm8994_Reset(AUDIO_I2C_ADDRESS);
-	HAL_Delay(100);
-	rc = wm8994_Init(AUDIO_I2C_ADDRESS,
-					 INPUT_DEVICE_INPUT_LINE_1 | OUTPUT_DEVICE_BOTH, 70,
-					 Sample_Frequency / 2);
-	(void)rc;
-	HAL_Delay(100);
-}
-
 void start_duplex(void)
 {
 	// note, somehow there is a sneak path for setting the codec frequency see wmcodec for reference
@@ -167,13 +156,14 @@ void BSP_AUDIO_OUT_HalfTransfer_CallBack(void)
 {
 }
 
-static const float RMSConstant = 1.0 / 65485.0;
-static const long NCOphzinc = (long)(KCONV * (PI2 * LO_Freq / Sample_Frequency));
+// static const float RMSConstant = 1.0 / 65485.0;
+// static const long NCOphzinc = (long)(KCONV * (PI2 * LO_Freq / Sample_Frequency));
 
 int frame_counter = 0;
 
 void I2S2_RX_ProcessBuffer(uint16_t offset)
 {
+#if 0
 	static long NCO_phz = 0;
 
 	for (int i = 0; i < BUFFERSIZE / 4; i++)
@@ -187,14 +177,17 @@ void I2S2_RX_ProcessBuffer(uint16_t offset)
 
 	Process_FIR_I_32K();
 	Process_FIR_Q_32K();
+#endif
 
 	// Decimation
 	uint8_t  decimator = 0;
 	uint16_t ft8_pos = frame_counter * 256;
 	for (int i = 0; i < BUFFERSIZE / 4; i++)
 	{
-		USB_Out[i] = FIR_I_Out[i] - FIR_Q_Out[i];
-		LSB_Out[i] = FIR_I_Out[i] + FIR_Q_Out[i];
+		// USB_Out[i] = FIR_I_Out[i] - FIR_Q_Out[i];
+		// LSB_Out[i] = FIR_I_Out[i] + FIR_Q_Out[i];
+		USB_Out[i] = in_buff[offset + i * 2 + 0];
+		LSB_Out[i] = in_buff[offset + i * 2 + 1];
 
 		if (++decimator == 5) {
 			decimator = 0;
