@@ -91,9 +91,9 @@ void set_Xmit_Freq(void)
 void set_FT8_Tone(uint8_t ft8_tone)
 {
 	static const uint8_t fsk_freq[8] = {0, 6, 13, 19, 25, 31, 38, 44};
-	// uint64_t F_FT8 = (F_Long * 100ULL + (uint64_t)ft8_tone * FT8_TONE_SPACING) / 100ULL;
-	uint64_t F_FT8 = F_Long + fsk_freq[ft8_tone];
-	set_freq(F_FT8);
+	char cat_cmd[6];
+	snprintf(cat_cmd, sizeof(cat_cmd), "FO%.02u;", fsk_freq[ft8_tone]);
+	uart_tx(cat_cmd);
 }
 
 void set_Rcvr_Freq(void)
@@ -108,7 +108,7 @@ static void transmit()
 	if (xmit_flag) {
 		return;
 	}
-	uart_tx("MD3;AP1;SWH16;");
+	uart_tx("MD2;HK1;");
 	xmit_flag = 1;
 }
 
@@ -117,13 +117,14 @@ static void receive()
 	if (!xmit_flag) {
 		return;
 	}
-	uart_tx("SWH16;MD2;");
+	uart_tx("HK0;FO99;MD2;");
 	xmit_flag = 0;
 }
 
 static void set_freq(uint64_t freq)
 {
-	char cat_cmd[15];
-	snprintf(cat_cmd, sizeof(cat_cmd), "FA%.011lu;", (uint32_t)freq);
+	char cat_cmd[11];
+	// KH1 supports only 10Hz resolution
+	snprintf(cat_cmd, sizeof(cat_cmd), "FA%.07lu;", (uint32_t)freq / 10);
 	uart_tx(cat_cmd);
 }
