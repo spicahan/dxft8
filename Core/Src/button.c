@@ -43,7 +43,7 @@ const char *start;
 FreqStruct sBand_Data[NumBands] =
 	{
 		{// 40,
-		 7074, "7.074"},
+		 7074, "7.075"},
 		{// 30,
 		 10136, "10.136"},
 		{// 20,
@@ -55,7 +55,9 @@ FreqStruct sBand_Data[NumBands] =
 		{// 12,
 		 24915, "24.916"},
 		{// 10,
-		 28074, "28.075"}};
+		 28074, "28.075"},
+		{// 6,
+		 50313, "50.314"}};
 
 ButtonStruct sButtonData[NumButtons] = {
 	{// button 0  inhibit xmit either as beacon or answer CQ
@@ -1072,7 +1074,7 @@ void executeCalibrationButton(uint16_t index)
 		break;
 
 	case BandUp:
-		if (BandIndex < _10M)
+		if (BandIndex < NumBands - 1)
 		{
 			BandIndex++;
 			show_wide(340, 55, sBand_Data[BandIndex].Frequency);

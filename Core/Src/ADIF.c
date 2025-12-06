@@ -77,7 +77,7 @@ void write_ADIF_Log(void)
 	if (rsl_len > 0)
 		offset += sprintf(log_line + offset, "<comment:%u>%s ", rsl_len, Comment);
 
-	strcpy(log_line + offset, "<tx_pwr:4>0.5 <eor>");
+	strcpy(log_line + offset, "<tx_pwr:3>5.0<eor>");
 
 	// Force NULL termination
 	log_line[sizeof(log_line) - 1] = '\0';
