@@ -100,6 +100,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/SiLabs.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/Sine_table.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/RadioInterface.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/Uart.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/autoseq_engine.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/button.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/decode_ft8.c
