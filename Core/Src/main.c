@@ -35,7 +35,6 @@
 
 #include "FakeRTC.h"
 
-#include "SiLabs.h"
 #include "options.h"
 #include "autoseq_engine.h"
 #include "constants.h"
@@ -353,7 +352,7 @@ int main(void)
   HAL_Delay(10);
   display_Real_Date(0, 240);
 
-  start_Si5351();
+  radio_init();
 
   Set_Cursor_Frequency();
   show_variable(400, 25, (int)NCO_Frequency);
@@ -404,17 +403,17 @@ int main(void)
 
 					if (ft8_xmit_counter == 79)
 					{
-						xmit_flag = 0;
 						ft8_receive_sequence();
 						receive_sequence();
+						xmit_flag = 0;
 						ft8_xmit_delay = 0;
 					}
 				}
 			}
 			else
 			{
-				if (++ft8_xmit_delay == 16)
-					output_enable(SI5351_CLK0, 1);
+				++ft8_xmit_delay;
+				// Si5351 output enable removed for KX3 mode
 			}
 		}
 

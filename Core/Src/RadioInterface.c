@@ -28,6 +28,12 @@ static void set_freq(uint64_t freq);
 static void transmit();
 static void receive();
 
+void radio_init(void)
+{
+	// UART is initialized by CubeMX (MX_USART6_UART_Init)
+	// Nothing additional to initialize for KX3 mode
+}
+
 void setup_to_transmit_on_next_DSP_Flag(void)
 {
 	ft8_xmit_counter = 0;

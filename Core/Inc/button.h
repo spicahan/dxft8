@@ -205,7 +205,6 @@ void executeButton(uint16_t index);
 void executeCalibrationButton(uint16_t index);
 void xmit_sequence(void);
 void receive_sequence(void);
-void start_Si5351(void);
 
 void PTT_Out_Init(void);
 void PTT_Out_Set(void);
