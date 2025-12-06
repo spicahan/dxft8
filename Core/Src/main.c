@@ -1699,7 +1699,8 @@ static void MX_USART6_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART6_Init 2 */
-
+  /* Enable RXNE interrupt to immediately discard incoming data (KX2/KX3) */
+  __HAL_UART_ENABLE_IT(&huart6, UART_IT_RXNE);
   /* USER CODE END USART6_Init 2 */
 
 }

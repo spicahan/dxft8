@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * @file    Uart.c
-  * @brief   UART module implementation
+  * @brief   UART module implementation for KX2/KX3 communication
   ******************************************************************************
   */
 
@@ -17,24 +17,6 @@ extern UART_HandleTypeDef huart6;
 __IO ITStatus UartReady = RESET;
 
 /* Public functions ----------------------------------------------------------*/
-
-/**
-  * @brief  Initialize UART for KX2/KX3 communication
-  * @note   UART peripheral is already configured by MX_USART6_UART_Init()
-  *         This function just enables the RXNE interrupt to discard incoming data
-  * @param  None
-  * @retval None
-  */
-void uart_init(void)
-{
-  /* Enable USART6 interrupt */
-  HAL_NVIC_SetPriority(USART6_IRQn, 0, 1);
-  HAL_NVIC_EnableIRQ(USART6_IRQn);
-
-  /* Enable RXNE interrupt to immediately discard incoming data */
-  __HAL_UART_ENABLE_IT(&huart6, UART_IT_RXNE);
-}
-
 
 /**
   * @brief  Transmit data via UART

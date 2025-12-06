@@ -12,7 +12,6 @@
 #include "stm32f7xx_hal.h"
 
 /* Exported functions --------------------------------------------------------*/
-void uart_init(void);
 void uart_tx(const char *data);
 
 #endif /* __UART_H */
