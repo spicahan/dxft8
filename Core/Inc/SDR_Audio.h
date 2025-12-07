@@ -25,6 +25,9 @@ extern int Xmit_Mode;
 extern int xmit_flag, ft8_xmit_counter, ft8_xmit_delay;
 extern int frame_counter;
 
+// For tracking DSP cost
+extern uint32_t dsp_cost;
+
 #define ft8_hz 6.25
 #define LO_FREQ 8000
 

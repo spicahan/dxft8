@@ -148,6 +148,9 @@ static bool worked_qsos_in_display = false;
 // Used for display RX and TX after returning from Tune
 static bool tune_pressed = false;
 
+// For DSP cost tracking
+uint32_t dsp_cost = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -221,7 +224,15 @@ static void update_synchronization(void)
 		ft8_marker = 1;
 
 		tx_display_update();
-	}
+
+    // Show DSP cost
+    char dsp_cost_str[9];
+    snprintf(dsp_cost_str, sizeof(dsp_cost_str), "%3lu", dsp_cost / 375);
+    dsp_cost = 0;
+    BSP_LCD_SetFont(&Font16);
+    BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
+    BSP_LCD_DisplayStringAt(200, 240, (uint8_t *)dsp_cost_str, LEFT_MODE);
+  }
 
 	// Check if TX is intended
 	if (QSO_xmit && target_slot == slot_state && FT_8_counter < 29)

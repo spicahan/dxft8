@@ -174,6 +174,7 @@ int frame_counter = 0;
 
 void I2S2_RX_ProcessBuffer(uint16_t offset)
 {
+	uint32_t tick_before = HAL_GetTick();
 	static long NCO_phz = 0;
 
 	for (int i = 0; i < BUFFERSIZE / 4; i++)
@@ -205,6 +206,8 @@ void I2S2_RX_ProcessBuffer(uint16_t offset)
 		out_buff[index] = USB_Out[i];
 		out_buff[index + 1] = LSB_Out[i];
 	}
+	uint32_t tick_after = HAL_GetTick();
+	dsp_cost += tick_after - tick_before;
 
 	if (++frame_counter == 4)
 	{
