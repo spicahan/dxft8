@@ -22,7 +22,7 @@
 #define FFT_SIZE  2048
 #define input_gulp_size 1024
 
-extern double NCO_Frequency;
+extern int NCO_Frequency;
 extern int ft8_flag, FT_8_counter, ft8_marker;
 
 extern uint8_t FFT_Buffer[ft8_buffer_size];

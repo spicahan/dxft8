@@ -16,7 +16,7 @@
 #include "decode.h"
 #include "FIR_Coefficients.h"
 
-double NCO_Frequency;
+int NCO_Frequency;
 int ft8_flag, FT_8_counter, ft8_marker;
 uint8_t FFT_Buffer[ft8_buffer_size];
 uint8_t export_fft_power[ft8_msg_samples * ft8_buffer_size * 4];

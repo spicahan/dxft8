@@ -26,6 +26,7 @@ extern int xmit_flag, ft8_xmit_counter, ft8_xmit_delay;
 extern int frame_counter;
 
 #define ft8_hz 6.25
+#define LO_FREQ 10000
 
 void start_duplex(void);
 void start_audio_I2C(void);

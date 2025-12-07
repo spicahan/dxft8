@@ -87,6 +87,6 @@ void set_FT8_Tone(uint8_t ft8_tone)
 
 void set_Rcvr_Freq(void)
 {
-	uint64_t F_Receive = ((start_freq * 1000ULL - 10000ULL) * 100ULL * 4ULL);
+	uint64_t F_Receive = ((start_freq * 1000ULL - (uint16_t)LO_FREQ) * 100ULL * 4ULL);
 	set_freq(F_Receive, SI5351_CLK1);
 }

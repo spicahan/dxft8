@@ -130,7 +130,8 @@ void setup_display(void)
 
 void Set_Cursor_Frequency(void)
 {
-	NCO_Frequency = (double)((float)cursor * FFT_Resolution + ft8_min_freq);
+	// Round to nearest 1Hz
+	NCO_Frequency = ((cursor + ft8_min_bin) * 625 + 50) / 100;
 }
 
 static uint16_t valx, valy;
@@ -220,8 +221,8 @@ void Process_Touch(void)
 				if (cursor > FFT_W - 8)
 					cursor = FFT_W - 8;
 
-				NCO_Frequency = (double)(cursor + ft8_min_bin) * FFT_Resolution;
-				show_variable(400, 25, (int)NCO_Frequency);
+				Set_Cursor_Frequency();
+				show_variable(400, 25, NCO_Frequency);
 			}
 			// in the backlight area?
 			else if (LCD_Backlight_Touch())

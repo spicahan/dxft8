@@ -241,5 +241,5 @@ void set_QSO_Xmit_Freq(int freq)
 	cursor = (uint16_t)((float)freq / FFT_Resolution);
 
 	Set_Cursor_Frequency();
-	show_variable(400, 25, (int)NCO_Frequency);
+	show_variable(400, 25, NCO_Frequency);
 }

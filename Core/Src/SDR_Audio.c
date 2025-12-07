@@ -32,7 +32,7 @@ int xmit_flag, ft8_xmit_counter, ft8_xmit_delay;
 #define PI2 6.2831853071795864765
 #define KCONV 10430.37835 // 		4096*16/PI2
 
-static const double LO_Freq = 10000;
+static const double LO_Freq = LO_FREQ;
 static const int Sample_Frequency = 32000;
 
 static q15_t USB_Out[BUFFERSIZE / 4];
