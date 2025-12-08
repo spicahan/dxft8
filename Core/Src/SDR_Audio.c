@@ -12,13 +12,18 @@
 #include "stm32746g_discovery_lcd.h"
 #include "arm_math.h"
 #include "Process_DSP.h"
+#include "FIR_Coefficients.h"
 #include "main.h" // for decode_flag
 #include "button.h"
 
+// Input buffers for decimating FIR (NCO-mixed samples)
 q15_t FIR_I_In[BUFFERSIZE / 4];
 q15_t FIR_Q_In[BUFFERSIZE / 4];
-q15_t FIR_I_Out[BUFFERSIZE / 4];
-q15_t FIR_Q_Out[BUFFERSIZE / 4];
+
+// Output buffers for decimating FIR (decimated by 5: 1280 -> 256 samples)
+#define DECIM_OUTPUT_SIZE (BUFFERSIZE / 4 / DECIM_FACTOR)
+static q15_t Decim_I_Out[DECIM_OUTPUT_SIZE];
+static q15_t Decim_Q_Out[DECIM_OUTPUT_SIZE];
 
 q15_t FT8_Data[2048 / 2];
 
@@ -166,6 +171,12 @@ void I2S2_RX_ProcessBuffer(uint16_t offset)
 {
 	uint32_t tick_before = HAL_GetTick();
 	static uint8_t phz = 0;
+
+	// NCO mixing: multiply by exp(-j*2*pi*f_LO*n) using phase accumulator
+	// LO at Fs/4 = 8kHz, so phase cycles 0, pi/2, pi, 3pi/2
+	// cos: 1, 0, -1, 0   sin: 0, 1, 0, -1
+	// Multiply both channels by sin for SSB phasing
+	// (TODO) Multiply I channel by cos, Q channel by sin (for complex mixing)
 	for (int i = 0; i < BUFFERSIZE / 4; i++)
 	{
 		int index = i * 2 + offset;
@@ -188,19 +199,17 @@ void I2S2_RX_ProcessBuffer(uint16_t offset)
 		phz++;
 	}
 
-	Process_FIR_I_32K();
-	Process_FIR_Q_32K();
+	// Decimating FIR: filters and decimates in one efficient operation
+	// Uses polyphase decomposition internally - computes only the 256 output samples
+	// (vs old method: compute 1280 samples, discard 80%)
+	Process_Decim_I(FIR_I_In, Decim_I_Out);
+	Process_Decim_Q(FIR_Q_In, Decim_Q_Out);
 
-	// Decimation
-	uint8_t  decimator = 0;
-	uint16_t ft8_pos = frame_counter * 256;
-	for (int i = 0; i < BUFFERSIZE / 4; i++)
+	// USB demodulation on decimated samples (256 samples at 6.4kHz)
+	uint16_t ft8_pos = frame_counter * DECIM_OUTPUT_SIZE;
+	for (int i = 0; i < DECIM_OUTPUT_SIZE; i++)
 	{
-		q15_t USB = FIR_I_Out[i] - FIR_Q_Out[i];
-		if (++decimator == 5) {
-			decimator = 0;
-			FT8_Data[ft8_pos++] = USB;
-		}
+		FT8_Data[ft8_pos++] = Decim_I_Out[i] - Decim_Q_Out[i];
 	}
 	uint32_t tick_after = HAL_GetTick();
 	dsp_cost += tick_after - tick_before;

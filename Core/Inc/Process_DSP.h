@@ -30,8 +30,8 @@ extern uint8_t export_fft_power[ft8_msg_samples * ft8_buffer_size * 4];
 
 void init_DSP(void);
 
-void Process_FIR_I_32K(void);
-void Process_FIR_Q_32K(void);
+void Process_Decim_I(q15_t *pSrc, q15_t *pDst);
+void Process_Decim_Q(q15_t *pSrc, q15_t *pDst);
 void process_FT8_FFT(void);
 
 int ft8_decode(void);

@@ -20,6 +20,7 @@
  */
 
 #define NUM_FIR_COEF	128
+#define DECIM_FACTOR	5
 
 extern q15_t coeff_fir_I_32K[NUM_FIR_COEF];
 

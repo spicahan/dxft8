@@ -21,14 +21,17 @@ int ft8_flag, FT_8_counter, ft8_marker;
 uint8_t FFT_Buffer[ft8_buffer_size];
 uint8_t export_fft_power[ft8_msg_samples * ft8_buffer_size * 4];
 
-q15_t FIR_State_I[NUM_FIR_COEF + (BUFFERSIZE / 4) - 1];
-q15_t FIR_State_Q[NUM_FIR_COEF + (BUFFERSIZE / 4) - 1];
+// Decimating FIR filter state buffers
+// State size = numTaps + blockSize - 1 = 128 + 1280 - 1 = 1407
+q15_t Decim_State_I[NUM_FIR_COEF + (BUFFERSIZE / 4) - 1];
+q15_t Decim_State_Q[NUM_FIR_COEF + (BUFFERSIZE / 4) - 1];
 
 static int offset_step;
 static arm_rfft_instance_q15 fft_inst;
 
-static arm_fir_instance_q15 S_FIR_I_32K = {NUM_FIR_COEF, FIR_State_I, coeff_fir_I_32K};
-static arm_fir_instance_q15 S_FIR_Q_32K = {NUM_FIR_COEF, FIR_State_Q, coeff_fir_Q_32K};
+// Decimating FIR instances (initialized in init_DSP)
+static arm_fir_decimate_instance_q15 S_Decim_I;
+static arm_fir_decimate_instance_q15 S_Decim_Q;
 
 static q15_t window_dsp_buffer[FFT_SIZE];
 static q15_t extract_signal[input_gulp_size * 3]; // was float
@@ -41,14 +44,17 @@ static int32_t FFT_Mag_10[FFT_SIZE / 2];
 static float mag_db[FFT_SIZE / 2 + 1];
 static float window[FFT_SIZE];
 
-void Process_FIR_I_32K(void)
+// Decimating FIR: filters and decimates by DECIM_FACTOR in one efficient operation
+// Input: 1280 samples, Output: 256 samples (1280/5)
+// Uses polyphase decomposition internally - only computes outputs that are kept
+void Process_Decim_I(q15_t *pSrc, q15_t *pDst)
 {
-	arm_fir_q15(&S_FIR_I_32K, FIR_I_In, FIR_I_Out, BUFFERSIZE / 4);
+	arm_fir_decimate_q15(&S_Decim_I, pSrc, pDst, BUFFERSIZE / 4);
 }
 
-void Process_FIR_Q_32K(void)
+void Process_Decim_Q(q15_t *pSrc, q15_t *pDst)
 {
-	arm_fir_q15(&S_FIR_Q_32K, FIR_Q_In, FIR_Q_Out, BUFFERSIZE / 4);
+	arm_fir_decimate_q15(&S_Decim_Q, pSrc, pDst, BUFFERSIZE / 4);
 }
 
 static float ft_blackman_i(int i, int N)
@@ -72,6 +78,13 @@ void init_DSP(void)
 		window[i] = ft_blackman_i(i, FFT_SIZE);
 	}
 	offset_step = (int)ft8_buffer_size * 4;
+
+	// Initialize decimating FIR filters (5:1 decimation with 128-tap filter)
+	// blockSize must be multiple of decimation factor: 1280 / 5 = 256 outputs
+	arm_fir_decimate_init_q15(&S_Decim_I, NUM_FIR_COEF, DECIM_FACTOR,
+							  coeff_fir_I_32K, Decim_State_I, BUFFERSIZE / 4);
+	arm_fir_decimate_init_q15(&S_Decim_Q, NUM_FIR_COEF, DECIM_FACTOR,
+							  coeff_fir_Q_32K, Decim_State_Q, BUFFERSIZE / 4);
 }
 
 void process_FT8_FFT(void)

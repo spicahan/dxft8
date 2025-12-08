@@ -15,8 +15,6 @@
 
 extern q15_t FIR_I_In[BUFFERSIZE / 4];
 extern q15_t FIR_Q_In[BUFFERSIZE / 4];
-extern q15_t FIR_I_Out[BUFFERSIZE / 4];
-extern q15_t FIR_Q_Out[BUFFERSIZE / 4];
 
 extern q15_t FT8_Data[2048 / 2];
 
