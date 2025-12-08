@@ -14,7 +14,6 @@
 #include "Process_DSP.h"
 #include "main.h" // for decode_flag
 #include "button.h"
-#include "Sine_table.h"
 
 q15_t FIR_I_In[BUFFERSIZE / 4];
 q15_t FIR_Q_In[BUFFERSIZE / 4];
@@ -29,10 +28,6 @@ volatile int DSP_Flag;
 int Xmit_Mode = 0;
 int xmit_flag, ft8_xmit_counter, ft8_xmit_delay;
 
-#define PI2 6.2831853071795864765
-#define KCONV 10430.37835 // 		4096*16/PI2
-
-static const double LO_Freq = LO_FREQ;
 static const int Sample_Frequency = 32000;
 
 static q15_t USB_Out[BUFFERSIZE / 4];
@@ -167,23 +162,32 @@ void BSP_AUDIO_OUT_HalfTransfer_CallBack(void)
 {
 }
 
-static const float RMSConstant = 1.0 / 65485.0;
-static const long NCOphzinc = (long)(KCONV * (PI2 * LO_Freq / Sample_Frequency));
-
 int frame_counter = 0;
 
 void I2S2_RX_ProcessBuffer(uint16_t offset)
 {
 	uint32_t tick_before = HAL_GetTick();
-	static long NCO_phz = 0;
-
+	static uint8_t phz = 0;
 	for (int i = 0; i < BUFFERSIZE / 4; i++)
 	{
-		NCO_phz += NCOphzinc;
-		float temp = (q15_t)Sine_table[(NCO_phz >> 4) & 0xFFF] * RMSConstant;
 		int index = i * 2 + offset;
-		FIR_I_In[i] = (q15_t)(temp * in_buff[index]);
-		FIR_Q_In[i] = (q15_t)(temp * in_buff[index + 1]);
+		switch (phz & 3)
+		{ // phz mod 4
+			case 0:
+			case 2:
+				FIR_I_In[i] = 0;
+				FIR_Q_In[i] = 0;
+				break;
+			case 1:
+				FIR_I_In[i] = in_buff[index];
+				FIR_Q_In[i] = in_buff[index + 1];
+				break;
+			case 3:
+				FIR_I_In[i] = -in_buff[index];
+				FIR_Q_In[i] = -in_buff[index + 1];
+				break;
+		}
+		phz++;
 	}
 
 	Process_FIR_I_32K();
