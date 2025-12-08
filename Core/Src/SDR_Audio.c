@@ -30,8 +30,6 @@ int xmit_flag, ft8_xmit_counter, ft8_xmit_delay;
 
 static const int Sample_Frequency = 32000;
 
-static q15_t USB_Out[BUFFERSIZE / 4];
-static q15_t LSB_Out[BUFFERSIZE / 4];
 static q15_t in_buff[BUFFERSIZE];
 static q15_t out_buff[BUFFERSIZE];
 
@@ -198,17 +196,11 @@ void I2S2_RX_ProcessBuffer(uint16_t offset)
 	uint16_t ft8_pos = frame_counter * 256;
 	for (int i = 0; i < BUFFERSIZE / 4; i++)
 	{
-		USB_Out[i] = FIR_I_Out[i] - FIR_Q_Out[i];
-		LSB_Out[i] = FIR_I_Out[i] + FIR_Q_Out[i];
-
+		q15_t USB = FIR_I_Out[i] - FIR_Q_Out[i];
 		if (++decimator == 5) {
 			decimator = 0;
-			FT8_Data[ft8_pos++] = USB_Out[i];
+			FT8_Data[ft8_pos++] = USB;
 		}
-
-		int index = i * 2 + offset;
-		out_buff[index] = USB_Out[i];
-		out_buff[index + 1] = LSB_Out[i];
 	}
 	uint32_t tick_after = HAL_GetTick();
 	dsp_cost += tick_after - tick_before;
