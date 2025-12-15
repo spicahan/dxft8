@@ -38,7 +38,6 @@ void setup_to_transmit_on_next_DSP_Flag(void)
 {
 	ft8_xmit_counter = 0;
 	xmit_sequence();
-	transmit();
 	ft8_transmit_sequence();
 	xmit_flag = 1;
 }
@@ -57,6 +56,7 @@ void ft8_transmit_sequence(void)
 	Set_ADC_DVC(ADC_DVC_Off);
 	// HAL_Delay(10);
 	set_Xmit_Freq();
+	transmit();
 	HAL_Delay(10);
 }
 
