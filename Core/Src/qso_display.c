@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -27,9 +26,6 @@
 static const char *blank = "                     "; // 21 spaces
 static char worked_qso_entries[MAX_QSO_ENTRIES][MAX_LINE_LEN] = {};
 static int num_qsos = 0;
-
-static void add_header();
-static void remove_header();
 
 typedef enum _MsgColor
 {
@@ -151,47 +147,57 @@ bool display_worked_qsos()
     // Display in pages
     // pi is page index
     static int pi = 0;
-    
-    if (pi == 0) {
-        add_header();
-    }
 
     // Determine how many entries to show (max 100)
     int total_entries = num_qsos < MAX_QSO_ENTRIES ? num_qsos : MAX_QSO_ENTRIES;
 
-    if (pi * MAX_QSO_ROWS >= total_entries) {
+    // Calculate how many entries have been shown before this page
+    // First page shows (MAX_QSO_ROWS - 1) entries (header takes one row)
+    // Subsequent pages show MAX_QSO_ROWS entries each
+    int entries_before;
+    if (pi == 0) {
+        entries_before = 0;
+    } else {
+        entries_before = (MAX_QSO_ROWS - 1) + (pi - 1) * MAX_QSO_ROWS;
+    }
+
+    // If we've shown all entries (and this isn't the first page which always shows header)
+    if (pi > 0 && entries_before >= total_entries) {
         pi = 0;
-        remove_header();
         return false;
     }
-    
+
     // Clear the entire log region first
     clear_qso_region();
-    
+
+    int start_row;
+    int entries_this_page;
+
+    // On first page, display the header directly (not as a dummy entry)
+    if (pi == 0) {
+        char header[MAX_LINE_LEN];
+        snprintf(header, MAX_LINE_LEN, "Total worked QSOs:%3u", num_qsos);
+        display_line(true, 0, Black, Green, header);
+        start_row = 1;
+        entries_this_page = MAX_QSO_ROWS - 1;
+    } else {
+        start_row = 0;
+        entries_this_page = MAX_QSO_ROWS;
+    }
+
     // Display the log in reverse order (most recent first)
-    for (int ri = 0; ri < MAX_QSO_ROWS && (pi * MAX_QSO_ROWS + ri) < total_entries; ++ri)
+    for (int ri = 0; ri < entries_this_page && (entries_before + ri) < total_entries; ++ri)
     {
         // Calculate the QSO index in reverse chronological order
-        int paging_offset = pi * MAX_QSO_ROWS + ri;
-        int qso_index = num_qsos - 1 - paging_offset;
-        
+        int qso_index = num_qsos - 1 - entries_before - ri;
+
         // Get the actual array index using modulo for circular buffer
         int array_index = qso_index % MAX_QSO_ENTRIES;
-        
-        display_line(true, ri, Black, Green, worked_qso_entries[array_index]);
+
+        display_line(true, start_row + ri, Black, Green, worked_qso_entries[array_index]);
     }
     ++pi;
     return true;
-}
-
-static void add_header() {
-    char *header = add_worked_qso();
-    snprintf(header, MAX_LINE_LEN, "Total worked QSOs:%3u", num_qsos - 1);
-}
-
-static void remove_header() {
-    assert(num_qsos > 0);
-    --num_qsos;
 }
 
 // show debug text on LCD
